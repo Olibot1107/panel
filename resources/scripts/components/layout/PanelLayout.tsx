@@ -72,6 +72,11 @@ const BrandIcon = styled.div`
         rgba(var(--panel-accent-rgb, 239, 68, 68), 0.95),
         rgba(var(--panel-accent-rgb, 239, 68, 68), 0.65)
     );
+
+    & > img {
+        ${tw`w-5 h-5 object-contain`};
+        filter: drop-shadow(0 6px 12px rgba(1, 6, 18, 0.45));
+    }
 `;
 
 const BrandName = styled.div`
@@ -194,15 +199,18 @@ const StaticItem = ({ icon, label }: { icon: IconDefinition; label: string }) =>
 const PanelLayout = ({ children, topTitle, subHeader, activeSection }: Props) => {
     const location = useLocation();
     const name = useStoreState((state: ApplicationStore) => state.settings.data?.name || 'Panel');
+    const brandingIcon = useStoreState((state: ApplicationStore) => state.settings.data?.branding?.icon || '');
     const rootAdmin = useStoreState((state: ApplicationStore) => state.user.data?.rootAdmin || false);
     const active = activeSection || activeFromPath(location.pathname);
+
+    const brandIconSrc = brandingIcon ? `/${brandingIcon.replace(/^\/*/, '')}` : '';
 
     return (
         <Shell>
             <Sidebar>
                 <Brand to={'/'}>
                     <BrandIcon>
-                        <FontAwesomeIcon icon={faFeatherAlt} />
+                        {brandIconSrc ? <img src={brandIconSrc} alt={name} /> : <FontAwesomeIcon icon={faFeatherAlt} />}
                     </BrandIcon>
                     <BrandName>
                         <p>{name}</p>

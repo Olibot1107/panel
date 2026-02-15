@@ -23,6 +23,13 @@ class AssetComposer
         $view->with('siteConfiguration', [
             'name' => config('app.name') ?? 'Pterodactyl',
             'locale' => config('app.locale') ?? 'en',
+            'branding' => [
+                // Stored as a relative path under /public (e.g. "uploads/branding/panel-icon.png").
+                'icon' => config('branding.icon') ?? '',
+                'authHeroTitle' => config('branding.auth_hero_title') ?? 'Control your servers in one place.',
+                'authHeroTagline' => config('branding.auth_hero_tagline')
+                    ?? 'Secure access to deployments, monitoring, and account tools using the same interface style as your dashboard.',
+            ],
             'recaptcha' => [
                 'enabled' => config('recaptcha.enabled', false),
                 'siteKey' => config('recaptcha.website_key') ?? '',

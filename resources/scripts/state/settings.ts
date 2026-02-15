@@ -3,6 +3,11 @@ import { action, Action } from 'easy-peasy';
 export interface SiteSettings {
     name: string;
     locale: string;
+    branding: {
+        icon: string;
+        authHeroTitle: string;
+        authHeroTagline: string;
+    };
     recaptcha: {
         enabled: boolean;
         siteKey: string;

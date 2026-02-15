@@ -19,6 +19,10 @@ class SettingsServiceProvider extends ServiceProvider
     protected array $keys = [
         'app:name',
         'app:locale',
+        // UI branding surfaced to the frontend via SiteConfiguration.
+        'branding:icon',
+        'branding:auth_hero_title',
+        'branding:auth_hero_tagline',
         'recaptcha:enabled',
         'recaptcha:secret_key',
         'recaptcha:website_key',

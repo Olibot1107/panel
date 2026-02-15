@@ -4,7 +4,8 @@ const webpack = require('webpack');
 const { WebpackAssetsManifest } = require('webpack-assets-manifest');
 const TerserPlugin = require('terser-webpack-plugin');
 
-const isProduction = process.env.NODE_ENV === 'production';
+// Webpack expects booleans for minimize, etc. Treat production as an actual boolean.
+const isProduction = (process.env.NODE_ENV || '').toLowerCase() === 'production';
 const rawPublicPath = process.env.PUBLIC_PATH || process.env.WEBPACK_PUBLIC_PATH || '/assets/';
 const publicPath = rawPublicPath.endsWith('/') ? rawPublicPath : `${rawPublicPath}/`;
 const localCertsPath = path.join(__dirname, '../../docker/certificates');

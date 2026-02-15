@@ -75,7 +75,7 @@
                                 <i class="fa fa-home"></i> <span>Overview</span>
                             </a>
                         </li>
-                        <li class="{{ ! (starts_with(Route::currentRouteName(), 'admin.settings') && !starts_with(Route::currentRouteName(), 'admin.settings.knowledge-base')) ?: 'active' }}">
+                        <li class="{{ ! (starts_with(Route::currentRouteName(), 'admin.settings') && !starts_with(Route::currentRouteName(), 'admin.settings.knowledge-base') && !starts_with(Route::currentRouteName(), 'admin.settings.branding')) ?: 'active' }}">
                             <a href="{{ route('admin.settings')}}">
                                 <i class="fa fa-wrench"></i> <span>Settings</span>
                             </a>
@@ -94,6 +94,11 @@
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.settings.knowledge-base') ?: 'active' }}">
                             <a href="{{ route('admin.settings.knowledge-base') }}">
                                 <i class="fa fa-book"></i> <span>Docs</span>
+                            </a>
+                        </li>
+                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.settings.branding') ?: 'active' }}">
+                            <a href="{{ route('admin.settings.branding') }}">
+                                <i class="fa fa-paint-brush"></i> <span>Branding</span>
                             </a>
                         </li>
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.locations') ?: 'active' }}">
@@ -164,7 +169,7 @@
                     <strong><i class="fa fa-fw {{ $appIsGit ? 'fa-git-square' : 'fa-code-fork' }}"></i></strong> {{ $appVersion }}<br />
                     <strong><i class="fa fa-fw fa-clock-o"></i></strong> {{ round(microtime(true) - LARAVEL_START, 3) }}s
                 </div>
-                Copyright &copy; 2015 - {{ date('Y') }} <a href="https://pterodactyl.io/">Pterodactyl Software</a>.
+                Copyright &copy; 2015 - {{ date('Y') }} Voidium Pannel.
             </footer>
         </div>
         @section('footer-scripts')

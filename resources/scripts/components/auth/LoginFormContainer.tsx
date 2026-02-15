@@ -3,6 +3,8 @@ import { Form } from 'formik';
 import styled from 'styled-components/macro';
 import { breakpoint } from '@/theme';
 import FlashMessageRender from '@/components/FlashMessageRender';
+import { useStoreState } from 'easy-peasy';
+import { ApplicationStore } from '@/state';
 import tw from 'twin.macro';
 
 type Props = React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement> & {
@@ -77,6 +79,18 @@ const DashboardSubtitle = styled.p`
 `;
 
 export default forwardRef<HTMLFormElement, Props>(({ title, subtitle, variant = 'classic', ...props }, ref) => {
+    const brandingIcon = useStoreState((state: ApplicationStore) => state.settings.data?.branding?.icon || '');
+    const authHeroTitle = useStoreState(
+        (state: ApplicationStore) => state.settings.data?.branding?.authHeroTitle || 'Control your servers in one place.'
+    );
+    const authHeroTagline = useStoreState(
+        (state: ApplicationStore) =>
+            state.settings.data?.branding?.authHeroTagline ||
+            'Secure access to deployments, monitoring, and account tools using the same interface style as your dashboard.'
+    );
+
+    const heroIconSrc = brandingIcon ? `/${brandingIcon.replace(/^\/*/, '')}` : '/assets/svgs/pterodactyl.svg';
+
     if (variant === 'dashboard') {
         return (
             <DashboardContainer>
@@ -84,12 +98,9 @@ export default forwardRef<HTMLFormElement, Props>(({ title, subtitle, variant = 
                 <Form {...props} ref={ref}>
                     <DashboardShell>
                         <DashboardHero>
-                            <img src={'/assets/svgs/pterodactyl.svg'} css={tw`block w-40`} />
-                            <h3>Control your servers in one place.</h3>
-                            <p>
-                                Secure access to deployments, monitoring, and account tools using the same interface
-                                style as your dashboard.
-                            </p>
+                            <img src={heroIconSrc} css={tw`block w-12 h-12 object-contain`} />
+                            <h3>{authHeroTitle}</h3>
+                            <p>{authHeroTagline}</p>
                         </DashboardHero>
                         <DashboardCard>
                             {title && <DashboardHeading>{title}</DashboardHeading>}

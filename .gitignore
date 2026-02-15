@@ -12,6 +12,8 @@ storage/framework/*
 
 node_modules
 *.log
+output/
+.trash/
 _ide_helper.php
 _ide_helper_models.php
 .phpstorm.meta.php
