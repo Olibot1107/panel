@@ -37,6 +37,8 @@ return [
 
     'auth' => [
         '2fa_required' => env('APP_2FA_REQUIRED', 0),
+        // If disabled, the /auth/register page is hidden and registration attempts are rejected.
+        'registration_enabled' => (bool) env('APP_REGISTRATION_ENABLED', true),
         '2fa' => [
             'bytes' => 32,
             'window' => env('APP_2FA_WINDOW', 4),

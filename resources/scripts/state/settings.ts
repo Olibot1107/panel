@@ -12,6 +12,9 @@ export interface SiteSettings {
         enabled: boolean;
         siteKey: string;
     };
+    registration: {
+        enabled: boolean;
+    };
 }
 
 export interface SettingsStore {

@@ -34,6 +34,9 @@ class AssetComposer
                 'enabled' => config('recaptcha.enabled', false),
                 'siteKey' => config('recaptcha.website_key') ?? '',
             ],
+            'registration' => [
+                'enabled' => config('pterodactyl.auth.registration_enabled', true),
+            ],
         ]);
     }
 }

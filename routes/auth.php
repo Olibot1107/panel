@@ -15,7 +15,7 @@ use Pterodactyl\Http\Controllers\Auth;
 // These routes are defined so that we can continue to reference them programmatically.
 // They all route to the same controller function which passes off to React.
 Route::get('/login', [Auth\LoginController::class, 'index'])->name('auth.login');
-Route::get('/register', [Auth\LoginController::class, 'index'])->name('auth.register');
+Route::get('/register', [Auth\LoginController::class, 'index'])->middleware('registration.enabled')->name('auth.register');
 Route::get('/password', [Auth\LoginController::class, 'index'])->name('auth.forgot-password');
 Route::get('/password/reset/{token}', [Auth\LoginController::class, 'index'])->name('auth.reset');
 
@@ -26,7 +26,7 @@ Route::get('/password/reset/{token}', [Auth\LoginController::class, 'index'])->n
 Route::middleware(['throttle:authentication'])->group(function () {
     // Login endpoints.
     Route::post('/login', [Auth\LoginController::class, 'login'])->middleware('recaptcha');
-    Route::post('/register', [Auth\RegisterController::class, 'register'])->middleware('recaptcha');
+    Route::post('/register', [Auth\RegisterController::class, 'register'])->middleware(['recaptcha', 'registration.enabled']);
     Route::post('/login/checkpoint', Auth\LoginCheckpointController::class)->name('auth.login-checkpoint');
 
     // Forgot password route. A post to this endpoint will trigger an

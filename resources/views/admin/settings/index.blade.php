@@ -63,6 +63,24 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="form-group col-md-4">
+                                <label class="control-label">Account Registration</label>
+                                <div>
+                                    @php
+                                        $registration = old(
+                                            'pterodactyl:auth:registration_enabled',
+                                            config('pterodactyl.auth.registration_enabled', true) ? 'true' : 'false'
+                                        );
+                                    @endphp
+                                    <select class="form-control" name="pterodactyl:auth:registration_enabled">
+                                        <option value="true" @if($registration === 'true') selected @endif>Enabled</option>
+                                        <option value="false" @if($registration === 'false') selected @endif>Disabled</option>
+                                    </select>
+                                    <p class="text-muted"><small>If disabled, the registration page is hidden and new accounts cannot be created from the login screen.</small></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="box-footer">
                         {!! csrf_field() !!}

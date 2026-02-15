@@ -22,6 +22,7 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
 
     const { clearFlashes, clearAndAddHttpError } = useFlash();
     const { enabled: recaptchaEnabled, siteKey } = useStoreState((state) => state.settings.data!.recaptcha);
+    const registrationEnabled = useStoreState((state) => state.settings.data!.registration.enabled);
 
     useEffect(() => {
         clearFlashes();
@@ -104,23 +105,25 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
                             }}
                         />
                     )}
-                    <div css={tw`mt-6 text-center`}>
-                        <Link
-                            to={'/auth/register'}
-                            css={[
-                                tw`text-xs tracking-wide no-underline uppercase`,
-                                `
-                                    color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.9);
+                    {registrationEnabled && (
+                        <div css={tw`mt-6 text-center`}>
+                            <Link
+                                to={'/auth/register'}
+                                css={[
+                                    tw`text-xs tracking-wide no-underline uppercase`,
+                                    `
+                                        color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.9);
 
-                                    &:hover {
-                                        color: rgba(var(--panel-accent-rgb, 239, 68, 68), 1);
-                                    }
-                                `,
-                            ]}
-                        >
-                            Create account
-                        </Link>
-                    </div>
+                                        &:hover {
+                                            color: rgba(var(--panel-accent-rgb, 239, 68, 68), 1);
+                                        }
+                                    `,
+                                ]}
+                            >
+                                Create account
+                            </Link>
+                        </div>
+                    )}
                     <div css={tw`mt-3 text-center`}>
                         <Link
                             to={'/auth/password'}
