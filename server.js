@@ -37,9 +37,9 @@ Env:
 }
 
 const host = process.env.PANEL_HOST || '127.0.0.1';
-const port = Number.parseInt(process.env.PANEL_PORT || '8000', 10);
+const port = 80
 const upstreamHost = process.env.PANEL_UPSTREAM_HOST || '127.0.0.1';
-const upstreamPort = Number.parseInt(process.env.PANEL_UPSTREAM_PORT || '18000', 10);
+const upstreamPort = 80
 const watch = argv.includes('--watch') || process.env.PANEL_WATCH === '1';
 const doBuild = !argv.includes('--no-build') && process.env.PANEL_BUILD !== '0';
 const doProxy = !argv.includes('--no-proxy') && process.env.PANEL_PROXY !== '0';
