@@ -77,7 +77,9 @@ export default () => {
                 email: string().email('A valid email address is required.').required('Email is required.'),
                 firstName: string().required('First name is required.'),
                 lastName: string().required('Last name is required.'),
-                password: string().required('A password is required.').min(8, 'Password must be at least 8 characters.'),
+                password: string()
+                    .required('A password is required.')
+                    .min(8, 'Password must be at least 8 characters.'),
                 passwordConfirmation: string()
                     .required('Password confirmation is required.')
                     // @ts-expect-error this is valid
@@ -85,23 +87,27 @@ export default () => {
             })}
         >
             {({ isSubmitting, setSubmitting, submitForm }) => (
-                <LoginFormContainer title={'Create Your Account'} css={tw`w-full flex`}>
-                    <Field light type={'text'} label={'Username'} name={'username'} disabled={isSubmitting} />
+                <LoginFormContainer
+                    title={'Create Your Account'}
+                    subtitle={'Set up your panel access with the same interface style as your dashboard.'}
+                    variant={'dashboard'}
+                    css={tw`w-full flex`}
+                >
+                    <Field type={'text'} label={'Username'} name={'username'} disabled={isSubmitting} />
                     <div css={tw`mt-4`}>
-                        <Field light type={'email'} label={'Email'} name={'email'} disabled={isSubmitting} />
+                        <Field type={'email'} label={'Email'} name={'email'} disabled={isSubmitting} />
                     </div>
                     <div css={tw`mt-4`}>
-                        <Field light type={'text'} label={'First Name'} name={'firstName'} disabled={isSubmitting} />
+                        <Field type={'text'} label={'First Name'} name={'firstName'} disabled={isSubmitting} />
                     </div>
                     <div css={tw`mt-4`}>
-                        <Field light type={'text'} label={'Last Name'} name={'lastName'} disabled={isSubmitting} />
+                        <Field type={'text'} label={'Last Name'} name={'lastName'} disabled={isSubmitting} />
                     </div>
                     <div css={tw`mt-4`}>
-                        <Field light type={'password'} label={'Password'} name={'password'} disabled={isSubmitting} />
+                        <Field type={'password'} label={'Password'} name={'password'} disabled={isSubmitting} />
                     </div>
                     <div css={tw`mt-4`}>
                         <Field
-                            light
                             type={'password'}
                             label={'Confirm Password'}
                             name={'passwordConfirmation'}
@@ -131,7 +137,16 @@ export default () => {
                     <div css={tw`mt-6 text-center`}>
                         <Link
                             to={'/auth/login'}
-                            css={tw`text-xs text-neutral-500 tracking-wide no-underline uppercase hover:text-neutral-600`}
+                            css={[
+                                tw`text-xs tracking-wide no-underline uppercase`,
+                                `
+                                    color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.9);
+
+                                    &:hover {
+                                        color: rgba(var(--panel-accent-rgb, 239, 68, 68), 1);
+                                    }
+                                `,
+                            ]}
                         >
                             Return to Login
                         </Link>
