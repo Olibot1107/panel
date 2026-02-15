@@ -68,12 +68,18 @@ Route::group(['prefix' => 'settings'], function () {
     Route::get('/', [Admin\Settings\IndexController::class, 'index'])->name('admin.settings');
     Route::get('/mail', [Admin\Settings\MailController::class, 'index'])->name('admin.settings.mail');
     Route::get('/advanced', [Admin\Settings\AdvancedController::class, 'index'])->name('admin.settings.advanced');
+    Route::get('/knowledge-base', [Admin\Settings\KnowledgeBaseController::class, 'index'])->name('admin.settings.knowledge-base');
+    Route::get('/knowledge-base/new', [Admin\Settings\KnowledgeBaseController::class, 'create'])->name('admin.settings.knowledge-base.new');
+    Route::get('/knowledge-base/{article:id}', [Admin\Settings\KnowledgeBaseController::class, 'view'])->name('admin.settings.knowledge-base.view');
 
     Route::post('/mail/test', [Admin\Settings\MailController::class, 'test'])->name('admin.settings.mail.test');
+    Route::post('/knowledge-base', [Admin\Settings\KnowledgeBaseController::class, 'store'])->name('admin.settings.knowledge-base.store');
 
     Route::patch('/', [Admin\Settings\IndexController::class, 'update']);
     Route::patch('/mail', [Admin\Settings\MailController::class, 'update']);
     Route::patch('/advanced', [Admin\Settings\AdvancedController::class, 'update']);
+    Route::patch('/knowledge-base/{article:id}', [Admin\Settings\KnowledgeBaseController::class, 'update'])->name('admin.settings.knowledge-base.update');
+    Route::delete('/knowledge-base/{article:id}', [Admin\Settings\KnowledgeBaseController::class, 'delete'])->name('admin.settings.knowledge-base.delete');
 });
 
 /*

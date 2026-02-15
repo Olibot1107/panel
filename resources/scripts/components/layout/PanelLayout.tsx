@@ -20,14 +20,7 @@ import { ApplicationStore } from '@/state';
 import NavigationBar from '@/components/NavigationBar';
 import { useLocation } from 'react-router';
 
-export type PanelActiveSection =
-    | 'dashboard'
-    | 'servers'
-    | 'status'
-    | 'knowledge'
-    | 'account'
-    | 'api'
-    | 'activity';
+export type PanelActiveSection = 'dashboard' | 'servers' | 'status' | 'knowledge' | 'account' | 'api' | 'activity';
 
 interface Props {
     children: React.ReactNode;
@@ -231,7 +224,7 @@ const PanelLayout = ({ children, topTitle, subHeader, activeSection }: Props) =>
                     </SectionTitle>
                     <NavItem
                         icon={faBookOpen}
-                        label={'Knowledge Base'}
+                        label={'Docs'}
                         to={'/support/knowledge-base'}
                         active={active === 'knowledge'}
                     />

@@ -21,6 +21,8 @@ Route::get('/', [Client\ClientController::class, 'index'])->name('api:client.ind
 Route::post('/servers/reorder', [Client\ClientController::class, 'reorderServers'])->name('api:client.servers.reorder');
 Route::get('/permissions', [Client\ClientController::class, 'permissions']);
 Route::get('/nodes/status', Client\NodeStatusController::class);
+Route::get('/support/knowledge-base', [Client\KnowledgeBaseController::class, 'index']);
+Route::get('/support/knowledge-base/{slug}', [Client\KnowledgeBaseController::class, 'view']);
 
 Route::prefix('/account')->middleware(AccountSubject::class)->group(function () {
     Route::prefix('/')->withoutMiddleware(RequireTwoFactorAuthentication::class)->group(function () {

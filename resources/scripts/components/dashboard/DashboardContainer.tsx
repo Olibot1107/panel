@@ -18,6 +18,7 @@ import { formatDistanceToNow } from 'date-fns';
 import Avatar from '@/components/Avatar';
 import { ActivityLog } from '@definitions/user';
 import BlurredValue from '@/components/elements/BlurredValue';
+import { listKnowledgeBaseArticles } from '@/lib/knowledgeBase';
 
 const DashboardGrid = styled.div`
     ${tw`grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(19rem,1fr)]`};
@@ -77,6 +78,24 @@ const EmptyState = styled.div`
 
     & > p {
         ${tw`text-sm text-neutral-400 mt-2`};
+    }
+`;
+
+const KnowledgeItem = styled(Link)`
+    ${tw`block rounded-lg px-4 py-3 no-underline mb-3`};
+    background: rgba(6, 11, 21, 0.45);
+    border: 1px solid rgba(71, 85, 105, 0.25);
+
+    &:hover {
+        background: rgba(12, 20, 35, 0.72);
+    }
+
+    & > h4 {
+        ${tw`text-neutral-100 text-sm font-semibold mb-1 line-clamp-1`};
+    }
+
+    & > p {
+        ${tw`text-xs text-neutral-400 line-clamp-2`};
     }
 `;
 
@@ -189,6 +208,7 @@ export default () => {
         { page: 1, sorts: { timestamp: -1 } },
         { revalidateOnMount: true, revalidateOnFocus: false }
     );
+    const { data: knowledgeArticles } = useSWR(['knowledge-base:dashboard'], () => listKnowledgeBaseArticles());
 
     useEffect(() => {
         if (error) clearAndAddHttpError({ key: 'dashboard', error });
@@ -229,14 +249,29 @@ export default () => {
 
                     <SurfaceCard>
                         <CardHeading>
-                            <h3>Knowledge Base</h3>
+                            <h3>Docs</h3>
                             <CardHeadingAction to={'/support/knowledge-base'}>View All -&gt;</CardHeadingAction>
                         </CardHeading>
-                        <EmptyState>
-                            <FontAwesomeIcon icon={faBookOpen} />
-                            <h4>No featured articles yet</h4>
-                            <p>Helpful guides and quick answers will appear here.</p>
-                        </EmptyState>
+                        {knowledgeArticles && knowledgeArticles.length > 0 ? (
+                            <>
+                                {knowledgeArticles.slice(0, 3).map((article) => (
+                                    <KnowledgeItem key={article.id} to={`/support/knowledge-base/${article.slug}`}>
+                                        <h4>{article.title}</h4>
+                                        <p>
+                                            {article.summary ||
+                                                article.readmePreview ||
+                                                'Read this documentation article.'}
+                                        </p>
+                                    </KnowledgeItem>
+                                ))}
+                            </>
+                        ) : (
+                            <EmptyState>
+                                <FontAwesomeIcon icon={faBookOpen} />
+                                <h4>No featured articles yet</h4>
+                                <p>Helpful guides and quick answers will appear here.</p>
+                            </EmptyState>
+                        )}
                     </SurfaceCard>
                 </div>
 

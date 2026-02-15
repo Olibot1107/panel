@@ -75,7 +75,7 @@
                                 <i class="fa fa-home"></i> <span>Overview</span>
                             </a>
                         </li>
-                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.settings') ?: 'active' }}">
+                        <li class="{{ ! (starts_with(Route::currentRouteName(), 'admin.settings') && !starts_with(Route::currentRouteName(), 'admin.settings.knowledge-base')) ?: 'active' }}">
                             <a href="{{ route('admin.settings')}}">
                                 <i class="fa fa-wrench"></i> <span>Settings</span>
                             </a>
@@ -89,6 +89,11 @@
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.databases') ?: 'active' }}">
                             <a href="{{ route('admin.databases') }}">
                                 <i class="fa fa-database"></i> <span>Databases</span>
+                            </a>
+                        </li>
+                        <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.settings.knowledge-base') ?: 'active' }}">
+                            <a href="{{ route('admin.settings.knowledge-base') }}">
+                                <i class="fa fa-book"></i> <span>Docs</span>
                             </a>
                         </li>
                         <li class="{{ ! starts_with(Route::currentRouteName(), 'admin.locations') ?: 'active' }}">
