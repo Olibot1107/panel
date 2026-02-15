@@ -42,7 +42,7 @@ $style = [
 
     /* Type ------------------------------ */
 
-    'anchor' => 'color: #3869D4;',
+    'anchor' => 'color: #EA7B17;',
     'header-1' => 'margin-top: 0; color: #2F3133; font-size: 19px; font-weight: bold; text-align: left;',
     'paragraph' => 'margin-top: 0; color: #74787E; font-size: 16px; line-height: 1.5em;',
     'paragraph-sub' => 'margin-top: 0; color: #74787E; font-size: 12px; line-height: 1.5em;',
@@ -51,12 +51,12 @@ $style = [
     /* Buttons ------------------------------ */
 
     'button' => 'display: block; display: inline-block; width: 200px; min-height: 20px; padding: 10px;
-                 background-color: #3869D4; border-radius: 3px; color: #ffffff; font-size: 15px; line-height: 25px;
+                 background-color: #EA7B17; border-radius: 3px; color: #ffffff; font-size: 15px; line-height: 25px;
                  text-align: center; text-decoration: none; -webkit-text-size-adjust: none;',
 
     'button--green' => 'background-color: #22BC66;',
     'button--red' => 'background-color: #dc4d2f;',
-    'button--blue' => 'background-color: #3869D4;',
+    'button--orange' => 'background-color: #EA7B17;',
 ];
 ?>
 
@@ -116,7 +116,7 @@ $style = [
                                                                     $actionColor = 'button--red';
                                                                     break;
                                                                 default:
-                                                                    $actionColor = 'button--blue';
+                                                                    $actionColor = 'button--orange';
                                                             }
                                                         ?>
 

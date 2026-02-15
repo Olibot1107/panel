@@ -35,10 +35,10 @@
   }
 
   &:hover, &:focus {
-    @apply bg-blue-500 text-blue-50;
+    @apply bg-orange-500 text-orange-50;
 
     & svg {
-      @apply text-blue-50;
+      @apply text-orange-50;
     }
   }
 

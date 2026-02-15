@@ -139,7 +139,7 @@
                     @endif
                     @if(!$server->isInstalled())
                         <div class="col-sm-12">
-                            <div class="small-box {{ (! $server->isInstalled()) ? 'bg-blue' : 'bg-maroon' }}">
+                            <div class="small-box {{ (! $server->isInstalled()) ? 'bg-orange' : 'bg-maroon' }}">
                                 <div class="inner">
                                     <h3 class="no-margin">{{ (! $server->isInstalled()) ? 'Installing' : 'Install Failed' }}</h3>
                                 </div>

@@ -26,7 +26,8 @@ module.exports = {
                 black: '#131a20',
                 // "primary" and "neutral" are deprecated, prefer the use of "blue" and "gray"
                 // in new code.
-                primary: colors.blue,
+                blue: colors.orange,
+                primary: colors.orange,
                 gray: gray,
                 neutral: gray,
                 cyan: colors.cyan,

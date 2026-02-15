@@ -23,7 +23,7 @@
  @import 'checkbox.css';
 
 .login-page {
-    background: #10529f;
+    background: #c65a16;
 }
 
 #login-position-elements {
@@ -503,38 +503,38 @@ body {
     box-shadow: 0 4px 8px 0 rgba(0,0,0,.12), 0 2px 4px 0 rgba(0,0,0,.08);
 }
 
-.skin-blue .wrapper, .skin-blue .main-sidebar, .skin-blue .left-side {
+.skin-orange .wrapper, .skin-orange .main-sidebar, .skin-orange .left-side {
     background-color: #181f27;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,.12), 0 2px 4px 0 rgba(0,0,0,.08);
 }
 
-.skin-blue .main-header .logo {
+.skin-orange .main-header .logo {
     background-color: #1f2933;
     color: #9aa5b1;
 }
 
-.skin-blue .main-header .navbar .sidebar-toggle {
+.skin-orange .main-header .navbar .sidebar-toggle {
     color: #9aa5b1;
 }
 
-.skin-blue .main-header .navbar .nav>li>a {
+.skin-orange .main-header .navbar .nav>li>a {
     color: #9aa5b1;
 }
 
-.skin-blue .sidebar-menu>li.header {
+.skin-orange .sidebar-menu>li.header {
     color: #797979;
     background: #0e111582;
 }
 
-.skin-blue .main-header .navbar {
+.skin-orange .main-header .navbar {
     background-color: #1f2933;
 }
 
-.skin-blue .main-header .navbar .sidebar-toggle:hover {
+.skin-orange .main-header .navbar .sidebar-toggle:hover {
     background-color: #1c252e;
 }
 
-.skin-blue .main-header .logo:hover {
+.skin-orange .main-header .logo:hover {
     background-color: #1c252e;
 }
 
@@ -544,7 +544,7 @@ body {
     border-top: 1px solid #1f2933;
 }
 
-.skin-blue .sidebar-menu>li.active>a {
+.skin-orange .sidebar-menu>li.active>a {
     border-left-color: #099aa5;
 }
 
@@ -579,13 +579,13 @@ body {
 }
 
 .btn-primary {
-    background-color: #0967d3;
-    border-color: #0550b3;
+    background-color: #ea7b17;
+    border-color: #c65a16;
 }
 
 .btn.btn-primary:hover {
-    background-color: #0550b3;
-    border-color: #0345a0;
+    background-color: #c65a16;
+    border-color: #a94912;
 }
 
 .box {

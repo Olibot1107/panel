@@ -127,7 +127,7 @@
                         </div>
                     </div>
                     <div class="col-sm-12">
-                        <div class="info-box bg-blue">
+                        <div class="info-box bg-orange">
                             <span class="info-box-icon"><i class="ion ion-social-buffer-outline"></i></span>
                             <div class="info-box-content" style="padding: 23px 10px 0;">
                                 <span class="info-box-text">Total Servers</span>
