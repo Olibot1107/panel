@@ -31,8 +31,9 @@ const checkboxStyle = css<Props>`
     }
 
     &:focus {
-        ${tw`outline-none border-primary-300`};
-        box-shadow: 0 0 0 1px rgba(9, 103, 210, 0.25);
+        ${tw`outline-none`};
+        border-color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.8);
+        box-shadow: 0 0 0 1px rgba(var(--panel-accent-rgb, 239, 68, 68), 0.25);
     }
 `;
 
@@ -54,8 +55,15 @@ const inputStyle = css<Props>`
     }
 
     &:not(:disabled):not(:read-only):focus {
-        ${tw`shadow-md border-primary-300 ring-2 ring-primary-400 ring-opacity-50`};
-        ${(props) => props.hasError && tw`border-red-300 ring-red-200`};
+        ${tw`shadow-md`};
+        border-color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.8);
+        box-shadow: 0 0 0 2px rgba(var(--panel-accent-rgb, 239, 68, 68), 0.45);
+        ${(props) =>
+            props.hasError &&
+            css`
+                border-color: rgba(252, 165, 165, 0.9);
+                box-shadow: 0 0 0 2px rgba(254, 202, 202, 0.5);
+            `};
     }
 
     &:disabled {

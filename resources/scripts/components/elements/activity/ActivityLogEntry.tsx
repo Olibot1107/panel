@@ -11,11 +11,21 @@ import style from './style.module.css';
 import Avatar from '@/components/Avatar';
 import useLocationHash from '@/plugins/useLocationHash';
 import { getObjectKeys, isObject } from '@/lib/objects';
+import styled from 'styled-components/macro';
+import BlurredValue from '@/components/elements/BlurredValue';
 
 interface Props {
     activity: ActivityLog;
     children?: React.ReactNode;
 }
+
+const EntryRow = styled.div`
+    border-bottom: 1px solid rgba(var(--panel-accent-rgb, 239, 68, 68), 0.18);
+
+    &:last-child {
+        border-bottom: 0;
+    }
+`;
 
 function wrapProperties(value: unknown): any {
     if (value === null || typeof value === 'string' || typeof value === 'number') {
@@ -44,9 +54,15 @@ export default ({ activity, children }: Props) => {
     const properties = wrapProperties(activity.properties);
 
     return (
-        <div className={'grid grid-cols-10 py-4 border-b-2 border-gray-800 last:rounded-b last:border-0 group'}>
+        <EntryRow className={'grid grid-cols-10 py-4 group'}>
             <div className={'hidden sm:flex sm:col-span-1 items-center justify-center select-none'}>
-                <div className={'flex items-center w-10 h-10 rounded-full bg-gray-600 overflow-hidden'}>
+                <div
+                    className={'flex items-center w-10 h-10 rounded-full overflow-hidden'}
+                    style={{
+                        background: 'rgba(var(--panel-accent-rgb, 239, 68, 68), 0.2)',
+                        border: '1px solid rgba(var(--panel-accent-rgb, 239, 68, 68), 0.35)',
+                    }}
+                >
                     <Avatar name={actor?.uuid || 'system'} />
                 </div>
             </div>
@@ -59,7 +75,8 @@ export default ({ activity, children }: Props) => {
                         <span className={'text-gray-400'}>&nbsp;&mdash;&nbsp;</span>
                         <Link
                             to={`#${pathTo({ event: activity.event })}`}
-                            className={'transition-colors duration-75 active:text-cyan-400 hover:text-cyan-400'}
+                            className={'transition-colors duration-75'}
+                            style={{ color: 'rgba(var(--panel-accent-rgb, 239, 68, 68), 0.95)' }}
                         >
                             {activity.event}
                         </Link>
@@ -83,7 +100,7 @@ export default ({ activity, children }: Props) => {
                     <div className={'mt-1 flex items-center text-sm'}>
                         {activity.ip && (
                             <span>
-                                {activity.ip}
+                                <BlurredValue value={activity.ip} />
                                 <span className={'text-gray-400'}>&nbsp;|&nbsp;</span>
                             </span>
                         )}
@@ -94,6 +111,6 @@ export default ({ activity, children }: Props) => {
                 </div>
                 {activity.hasAdditionalMetadata && <ActivityLogMetaButton meta={activity.properties} />}
             </div>
-        </div>
+        </EntryRow>
     );
 };

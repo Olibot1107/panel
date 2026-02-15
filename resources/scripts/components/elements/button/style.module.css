@@ -34,15 +34,31 @@
 }
 
 .primary {
-    @apply bg-orange-600 text-orange-50;
-    @apply hover:bg-orange-500 active:bg-orange-500 focus:ring-orange-400 focus:ring-opacity-75;
+    color: #fff5f5;
+    background: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.95);
+    box-shadow: 0 6px 20px rgba(var(--panel-accent-rgb, 239, 68, 68), 0.2);
+    @apply focus:ring-opacity-75;
+    --tw-ring-color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.5);
+
+    &:hover,
+    &:active {
+        background: rgba(var(--panel-accent-rgb, 239, 68, 68), 1);
+    }
 
     &.secondary {
-        @apply hover:bg-orange-600 active:bg-orange-600;
+        background: transparent;
+        color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.95);
+
+        &:hover,
+        &:active {
+            background: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.18);
+        }
     }
 
     &:disabled {
-        @apply bg-orange-500/75 text-orange-200/75;
+        color: rgba(255, 245, 245, 0.7);
+        background: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.45);
+        box-shadow: none;
     }
 }
 

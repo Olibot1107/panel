@@ -12,6 +12,14 @@ import classNames from 'classnames';
 import ActivityLogEntry from '@/components/elements/activity/ActivityLogEntry';
 import Tooltip from '@/components/elements/tooltip/Tooltip';
 import useLocationHash from '@/plugins/useLocationHash';
+import styled from 'styled-components/macro';
+import tw from 'twin.macro';
+
+const ActivitySurface = styled.div`
+    ${tw`rounded-xl overflow-hidden`};
+    background: linear-gradient(140deg, rgba(67, 83, 104, 0.95), rgba(60, 76, 97, 0.96));
+    border: 1px solid rgba(var(--panel-accent-rgb, 239, 68, 68), 0.22);
+`;
 
 export default () => {
     const { hash } = useLocationHash();
@@ -47,7 +55,7 @@ export default () => {
             {!data && isValidating ? (
                 <Spinner centered />
             ) : (
-                <div className={'bg-gray-700'}>
+                <ActivitySurface>
                     {data?.items.map((activity) => (
                         <ActivityLogEntry key={activity.id} activity={activity}>
                             {typeof activity.properties.useragent === 'string' && (
@@ -59,7 +67,7 @@ export default () => {
                             )}
                         </ActivityLogEntry>
                     ))}
-                </div>
+                </ActivitySurface>
             )}
             {data && (
                 <PaginationFooter

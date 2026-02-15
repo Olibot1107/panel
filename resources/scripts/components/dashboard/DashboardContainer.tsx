@@ -1,190 +1,287 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Server } from '@/api/server/getServer';
 import getServers from '@/api/getServers';
-import reorderServers from '@/api/reorderServers';
 import ServerRow from '@/components/dashboard/ServerRow';
 import Spinner from '@/components/elements/Spinner';
 import PageContentBlock from '@/components/elements/PageContentBlock';
 import useFlash from '@/plugins/useFlash';
 import { useStoreState } from 'easy-peasy';
-import { usePersistedState } from '@/plugins/usePersistedState';
-import Switch from '@/components/elements/Switch';
 import tw from 'twin.macro';
 import useSWR from 'swr';
 import { PaginatedResult } from '@/api/http';
-import Pagination from '@/components/elements/Pagination';
-import { useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowDown, faArrowUp, faCheck, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faBookOpen, faServer } from '@fortawesome/free-solid-svg-icons';
+import styled from 'styled-components/macro';
+import { useActivityLogs } from '@/api/account/activity';
+import { formatDistanceToNow } from 'date-fns';
+import Avatar from '@/components/Avatar';
+import { ActivityLog } from '@definitions/user';
+import BlurredValue from '@/components/elements/BlurredValue';
+
+const DashboardGrid = styled.div`
+    ${tw`grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(19rem,1fr)]`};
+`;
+
+const SurfaceCard = styled.section`
+    ${tw`rounded-xl p-5`};
+    background: linear-gradient(145deg, rgba(11, 19, 34, 0.94), rgba(9, 16, 30, 0.96));
+    border: 1px solid rgba(64, 98, 153, 0.28);
+    box-shadow: 0 18px 45px rgba(1, 6, 18, 0.55);
+`;
+
+const HeroCard = styled(SurfaceCard)`
+    background: radial-gradient(circle at 75% 30%, rgba(var(--panel-accent-rgb, 239, 68, 68), 0.35), transparent 42%),
+        linear-gradient(135deg, rgba(13, 24, 46, 0.98), rgba(8, 14, 29, 0.96));
+    border-color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.38);
+
+    & > h2 {
+        ${tw`text-4xl font-semibold text-neutral-100`};
+        letter-spacing: -0.02em;
+    }
+
+    & > p {
+        ${tw`mt-2 text-neutral-300`};
+    }
+`;
+
+const CardHeading = styled.div`
+    ${tw`flex items-center justify-between mb-4`};
+
+    & > h3 {
+        ${tw`text-2xl font-semibold text-neutral-100`};
+    }
+`;
+
+const CardHeadingAction = styled(Link)`
+    ${tw`text-sm no-underline`};
+    color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.95);
+
+    &:hover {
+        color: rgba(var(--panel-accent-rgb, 239, 68, 68), 1);
+    }
+`;
+
+const EmptyState = styled.div`
+    ${tw`rounded-lg p-8 text-center`};
+    background: rgba(5, 9, 18, 0.4);
+    border: 1px solid rgba(55, 81, 126, 0.28);
+
+    & > svg {
+        ${tw`text-neutral-400 text-3xl mb-4`};
+    }
+
+    & > h4 {
+        ${tw`text-lg text-neutral-200`};
+    }
+
+    & > p {
+        ${tw`text-sm text-neutral-400 mt-2`};
+    }
+`;
+
+const ProfileCard = styled(SurfaceCard)`
+    ${tw`flex items-center`};
+`;
+
+const ProfileName = styled.div`
+    ${tw`ml-4`};
+
+    & > h3 {
+        ${tw`text-2xl text-neutral-100 font-semibold`};
+    }
+
+    & > p {
+        ${tw`text-sm text-neutral-400`};
+    }
+`;
+
+const RoleBadge = styled.span`
+    ${tw`inline-block text-xs rounded-md px-2 py-1 font-semibold mr-2 mb-2`};
+    color: #f5c96b;
+    background: rgba(113, 84, 20, 0.42);
+    border: 1px solid rgba(184, 137, 45, 0.55);
+`;
+
+const ActivityItem = styled.div`
+    ${tw`relative py-3 pl-10`};
+
+    &:not(:last-of-type) {
+        border-bottom: 1px solid rgba(65, 92, 139, 0.2);
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0.6rem;
+        top: 1.5rem;
+        bottom: -0.8rem;
+        width: 1px;
+        background: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.22);
+    }
+
+    &:last-of-type::before {
+        display: none;
+    }
+`;
+
+const ActivityDot = styled.span`
+    ${tw`absolute rounded-full`};
+    left: 0;
+    top: 1rem;
+    width: 1.35rem;
+    height: 1.35rem;
+    background: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.9);
+    border: 3px solid rgba(12, 21, 37, 1);
+    box-shadow: 0 0 0 1px rgba(var(--panel-accent-rgb, 239, 68, 68), 0.35);
+`;
+
+const ActivityTitle = styled.p`
+    ${tw`text-neutral-100 text-sm font-medium`};
+`;
+
+const ActivityDetail = styled.p`
+    ${tw`text-xs text-neutral-300 mt-1 line-clamp-1`};
+`;
+
+const ActivityTime = styled.p`
+    ${tw`text-xs text-neutral-400 mt-1`};
+`;
+
+const eventDescription = (entry: ActivityLog): React.ReactNode => {
+    if (entry.description && entry.description.trim().length > 0) {
+        return entry.description;
+    }
+
+    if (entry.ip) {
+        return (
+            <>
+                From <BlurredValue value={entry.ip} />
+            </>
+        );
+    }
+
+    return 'No additional details';
+};
+
+const AvatarRing = styled.span`
+    ${tw`w-14 h-14 rounded-full overflow-hidden border p-[2px]`};
+    border-color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.5);
+`;
+
+const normalizeEventName = (event: string): string =>
+    event
+        .replace(/\./g, ' ')
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (match) => match.toUpperCase());
 
 export default () => {
-    const { search } = useLocation();
-    const defaultPage = Number(new URLSearchParams(search).get('page') || '1');
-
-    const [page, setPage] = useState(!isNaN(defaultPage) && defaultPage > 0 ? defaultPage : 1);
     const { clearFlashes, clearAndAddHttpError } = useFlash();
-    const uuid = useStoreState((state) => state.user.data!.uuid);
+    const username = useStoreState((state) => state.user.data!.username);
+    const email = useStoreState((state) => state.user.data!.email);
     const rootAdmin = useStoreState((state) => state.user.data!.rootAdmin);
-    const [showOnlyAdmin, setShowOnlyAdmin] = usePersistedState(`${uuid}:show_all_servers`, false);
-    const [orderedItems, setOrderedItems] = useState<Server[] | null>(null);
-    const [isSavingOrder, setIsSavingOrder] = useState(false);
-    const [isReorderMode, setIsReorderMode] = useState(false);
 
-    const { data: servers, error } = useSWR<PaginatedResult<Server>>(
-        ['/api/client/servers', showOnlyAdmin && rootAdmin, page],
-        () => getServers({ page, type: showOnlyAdmin && rootAdmin ? 'admin' : undefined })
+    const { data: servers, error } = useSWR<PaginatedResult<Server>>(['/api/client/servers', 1], () =>
+        getServers({ page: 1 })
     );
 
-    useEffect(() => {
-        setPage(1);
-    }, [showOnlyAdmin]);
-
-    useEffect(() => {
-        if (showOnlyAdmin) setIsReorderMode(false);
-    }, [showOnlyAdmin]);
-
-    useEffect(() => {
-        if (!servers) return;
-        if (servers.pagination.currentPage > 1 && !servers.items.length) {
-            setPage(1);
-        }
-    }, [servers?.pagination.currentPage]);
-
-    useEffect(() => {
-        setOrderedItems(servers?.items ?? null);
-    }, [servers?.items, servers?.pagination.currentPage]);
-
-    useEffect(() => {
-        // Don't use react-router to handle changing this part of the URL, otherwise it
-        // triggers a needless re-render. We just want to track this in the URL incase the
-        // user refreshes the page.
-        window.history.replaceState(null, document.title, `/${page <= 1 ? '' : `?page=${page}`}`);
-    }, [page]);
+    const { data: activity, isValidating: activityLoading } = useActivityLogs(
+        { page: 1, sorts: { timestamp: -1 } },
+        { revalidateOnMount: true, revalidateOnFocus: false }
+    );
 
     useEffect(() => {
         if (error) clearAndAddHttpError({ key: 'dashboard', error });
         if (!error) clearFlashes('dashboard');
     }, [error]);
-
-    const reorderEnabled = !(rootAdmin && showOnlyAdmin);
-
-    const persistOrder = async (next: Server[], previous: Server[]) => {
-        setOrderedItems(next);
-
-        const ids = next
-            .map((server) => Number(server.internalId))
-            .filter((id) => Number.isFinite(id) && id > 0);
-
-        if (ids.length !== next.length) {
-            setOrderedItems(previous);
-            return;
-        }
-
-        setIsSavingOrder(true);
-        try {
-            await reorderServers(ids);
-        } catch (orderError) {
-            setOrderedItems(previous);
-            clearAndAddHttpError({ key: 'dashboard', error: orderError });
-        } finally {
-            setIsSavingOrder(false);
-        }
-    };
-
-    const moveServer = (index: number, direction: -1 | 1) => {
-        if (!orderedItems || isSavingOrder) return;
-
-        const target = index + direction;
-        if (target < 0 || target >= orderedItems.length) return;
-
-        const previous = [...orderedItems];
-        const next = [...orderedItems];
-        const [item] = next.splice(index, 1);
-        next.splice(target, 0, item);
-
-        void persistOrder(next, previous);
-    };
+    const recentServers = servers?.items.slice(0, 2) || [];
 
     return (
         <PageContentBlock title={'Dashboard'} showFlashKey={'dashboard'}>
-            {(rootAdmin || reorderEnabled) && (
-                <div css={tw`mb-3 flex justify-between items-center`}>
-                    <div>
-                        {rootAdmin && (
-                            <div css={tw`flex items-center`}>
-                                <p css={tw`uppercase text-xs text-neutral-400 mr-2`}>
-                                    {showOnlyAdmin ? "Showing others' servers" : 'Showing your servers'}
-                                </p>
-                                <Switch
-                                    name={'show_all_servers'}
-                                    defaultChecked={showOnlyAdmin}
-                                    onChange={() => setShowOnlyAdmin((s) => !s)}
-                                />
-                            </div>
-                        )}
-                    </div>
-                    <div>
-                        {reorderEnabled && (
-                            <button
-                                type={'button'}
-                                onClick={() => setIsReorderMode((current) => !current)}
-                                disabled={isSavingOrder}
-                                css={tw`px-3 py-2 rounded bg-primary-500 hover:bg-primary-400 text-primary-50 text-sm disabled:opacity-60 disabled:cursor-not-allowed`}
-                            >
-                                <FontAwesomeIcon icon={isReorderMode ? faCheck : faEdit} css={tw`mr-2`} />
-                                {isReorderMode ? 'Done Reordering' : 'Edit Order'}
-                            </button>
-                        )}
-                    </div>
-                </div>
-            )}
-            {!servers ? (
-                <Spinner centered size={'large'} />
-            ) : (
-                <Pagination data={servers} onPageSelect={setPage}>
-                    {({ items }) =>
-                        (orderedItems ?? items).length > 0 ? (
-                            (orderedItems ?? items).map((server, index) => (
-                                <div key={server.uuid} css={index > 0 ? tw`mt-2` : undefined}>
-                                    {isReorderMode && reorderEnabled ? (
-                                        <div css={tw`grid grid-cols-[1fr_auto] gap-2 items-stretch`}>
-                                            <ServerRow server={server} />
-                                            <div css={tw`flex flex-col`}>
-                                                <button
-                                                    type={'button'}
-                                                    css={tw`h-1/2 px-3 rounded-t bg-neutral-700 text-neutral-200 hover:bg-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed`}
-                                                    onClick={() => moveServer(index, -1)}
-                                                    disabled={isSavingOrder || index === 0}
-                                                    aria-label={`Move ${server.name} up`}
-                                                >
-                                                    <FontAwesomeIcon icon={faArrowUp} />
-                                                </button>
-                                                <button
-                                                    type={'button'}
-                                                    css={tw`h-1/2 px-3 rounded-b bg-neutral-700 text-neutral-200 hover:bg-neutral-600 border-t border-neutral-600 disabled:opacity-40 disabled:cursor-not-allowed`}
-                                                    onClick={() => moveServer(index, 1)}
-                                                    disabled={isSavingOrder || index === (orderedItems ?? items).length - 1}
-                                                    aria-label={`Move ${server.name} down`}
-                                                >
-                                                    <FontAwesomeIcon icon={faArrowDown} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <ServerRow server={server} />
-                                    )}
+            <DashboardGrid>
+                <div css={tw`space-y-6`}>
+                    <HeroCard>
+                        <h2>Welcome back, {username}</h2>
+                        <p>Monitor your infrastructure and manage your services.</p>
+                    </HeroCard>
+
+                    <SurfaceCard>
+                        <CardHeading>
+                            <h3>Recent Servers</h3>
+                            <CardHeadingAction to={'/servers'}>View All -&gt;</CardHeadingAction>
+                        </CardHeading>
+                        {!servers ? (
+                            <Spinner centered size={'large'} />
+                        ) : recentServers.length > 0 ? (
+                            recentServers.map((server, index) => (
+                                <div key={server.uuid} css={index > 0 ? tw`mt-3` : undefined}>
+                                    <ServerRow server={server} />
                                 </div>
                             ))
                         ) : (
-                            <p css={tw`text-center text-sm text-neutral-400`}>
-                                {showOnlyAdmin
-                                    ? 'There are no other servers to display.'
-                                    : 'There are no servers associated with your account.'}
-                            </p>
-                        )
-                    }
-                </Pagination>
-            )}
+                            <EmptyState>
+                                <FontAwesomeIcon icon={faServer} />
+                                <h4>No servers found</h4>
+                                <p>Create your first server to get started.</p>
+                            </EmptyState>
+                        )}
+                    </SurfaceCard>
+
+                    <SurfaceCard>
+                        <CardHeading>
+                            <h3>Knowledge Base</h3>
+                            <CardHeadingAction to={'/support/knowledge-base'}>View All -&gt;</CardHeadingAction>
+                        </CardHeading>
+                        <EmptyState>
+                            <FontAwesomeIcon icon={faBookOpen} />
+                            <h4>No featured articles yet</h4>
+                            <p>Helpful guides and quick answers will appear here.</p>
+                        </EmptyState>
+                    </SurfaceCard>
+                </div>
+
+                <div css={tw`space-y-6`}>
+                    <ProfileCard>
+                        <AvatarRing>
+                            <Avatar.User />
+                        </AvatarRing>
+                        <ProfileName>
+                            <h3>{username}</h3>
+                            <div>
+                                <RoleBadge>{rootAdmin ? 'Admin' : 'User'}</RoleBadge>
+                            </div>
+                            <p>@{email.split('@')[0]}</p>
+                        </ProfileName>
+                    </ProfileCard>
+
+                    <SurfaceCard>
+                        <CardHeading>
+                            <h3>Recent Activity</h3>
+                            <CardHeadingAction to={'/account/activity'}>View All -&gt;</CardHeadingAction>
+                        </CardHeading>
+                        {!activity && activityLoading ? (
+                            <Spinner centered size={'small'} />
+                        ) : activity?.items.length ? (
+                            activity.items.slice(0, 4).map((entry) => (
+                                <ActivityItem key={entry.id}>
+                                    <ActivityDot />
+                                    <ActivityTitle>{normalizeEventName(entry.event)}</ActivityTitle>
+                                    <ActivityDetail>{eventDescription(entry)}</ActivityDetail>
+                                    <ActivityTime>
+                                        {formatDistanceToNow(entry.timestamp, { addSuffix: true })}
+                                    </ActivityTime>
+                                </ActivityItem>
+                            ))
+                        ) : (
+                            <EmptyState>
+                                <FontAwesomeIcon icon={faServer} />
+                                <h4>No recent activity</h4>
+                                <p>Account events will show up here as they happen.</p>
+                            </EmptyState>
+                        )}
+                    </SurfaceCard>
+                </div>
+            </DashboardGrid>
         </PageContentBlock>
     );
 };

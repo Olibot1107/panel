@@ -34,6 +34,20 @@ const spin = keyframes`
 
 const ActionButton = styled(Button)`
     ${tw`rounded-full w-8 h-8 flex items-center justify-center p-0`};
+    background-color: rgba(var(--panel-accent-rgb), 0.95) !important;
+    border-color: rgba(var(--panel-accent-rgb), 0.8) !important;
+    color: #f8fafc !important;
+    box-shadow: 0 8px 22px rgba(var(--panel-accent-rgb), 0.28);
+
+    &:hover:not(:disabled) {
+        background-color: rgba(var(--panel-accent-rgb), 1) !important;
+        border-color: rgba(var(--panel-accent-rgb), 0.95) !important;
+        box-shadow: 0 10px 26px rgba(var(--panel-accent-rgb), 0.38);
+    }
+
+    &:focus-visible {
+        box-shadow: 0 0 0 3px rgba(var(--panel-accent-rgb), 0.24), 0 8px 22px rgba(var(--panel-accent-rgb), 0.28);
+    }
 
     &.hover\\:spin:hover {
         animation: ${spin} 2s linear infinite;

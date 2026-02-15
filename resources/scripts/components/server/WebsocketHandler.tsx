@@ -109,18 +109,27 @@ export default () => {
 
     return error ? (
         <CSSTransition timeout={150} in appear classNames={'fade'}>
-            <div css={tw`bg-red-500 py-2`}>
-                <ContentContainer css={tw`flex items-center justify-center`}>
-                    {error === 'connecting' ? (
-                        <>
-                            <Spinner size={'small'} />
-                            <p css={tw`ml-2 text-sm text-red-100`}>
-                                We&apos;re having some trouble connecting to your server, please wait...
-                            </p>
-                        </>
-                    ) : (
-                        <p css={tw`ml-2 text-sm text-white`}>{error}</p>
-                    )}
+            <div css={tw`py-3`}>
+                <ContentContainer>
+                    <div
+                        css={tw`w-full rounded-xl px-4 py-3 flex items-center justify-center`}
+                        style={{
+                            border: '1px solid rgba(248, 113, 113, 0.38)',
+                            background: 'linear-gradient(90deg, rgba(127, 29, 29, 0.34), rgba(69, 10, 10, 0.34))',
+                            boxShadow: '0 10px 24px rgba(0, 0, 0, 0.25)',
+                        }}
+                    >
+                        {error === 'connecting' ? (
+                            <>
+                                <Spinner size={'small'} />
+                                <p css={tw`ml-3 text-sm text-red-100`}>
+                                    We&apos;re having some trouble connecting to your server, please wait...
+                                </p>
+                            </>
+                        ) : (
+                            <p css={tw`text-sm text-red-100`}>{error}</p>
+                        )}
+                    </div>
                 </ContentContainer>
             </div>
         </CSSTransition>

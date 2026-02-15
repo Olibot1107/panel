@@ -4,6 +4,11 @@ import { createGlobalStyle } from 'styled-components/macro';
 import font from '@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2';
 
 export default createGlobalStyle`
+    :root {
+        --panel-accent: #ef4444;
+        --panel-accent-rgb: 239, 68, 68;
+    }
+
     @font-face {
         font-family: 'IBM Plex Sans';
         font-style: normal;

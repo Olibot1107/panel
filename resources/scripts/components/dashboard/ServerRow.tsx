@@ -8,7 +8,7 @@ import { bytesToString, ip, mbToBytes } from '@/lib/formatters';
 import tw from 'twin.macro';
 import GreyRowBox from '@/components/elements/GreyRowBox';
 import Spinner from '@/components/elements/Spinner';
-import styled from 'styled-components/macro';
+import styled, { css } from 'styled-components/macro';
 import isEqual from 'react-fast-compare';
 
 // Determines if the current value is in an alarm threshold so we can show it in red rather
@@ -17,18 +17,26 @@ const isAlarmState = (current: number, limit: number): boolean => limit > 0 && c
 
 const Icon = memo(
     styled(FontAwesomeIcon)<{ $alarm: boolean }>`
-        ${(props) => (props.$alarm ? tw`text-red-400` : tw`text-neutral-500`)};
+        ${(props) =>
+            props.$alarm
+                ? tw`text-red-300`
+                : css`
+                      color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.95);
+                  `};
     `,
     isEqual
 );
 
 const IconDescription = styled.p<{ $alarm: boolean }>`
     ${tw`text-sm ml-2`};
-    ${(props) => (props.$alarm ? tw`text-white` : tw`text-neutral-400`)};
+    ${(props) => (props.$alarm ? tw`text-red-100` : tw`text-neutral-200`)};
 `;
 
 const StatusIndicatorBox = styled(GreyRowBox)<{ $status: ServerPowerState | undefined }>`
     ${tw`grid grid-cols-12 gap-4 relative`};
+    background: linear-gradient(140deg, rgba(12, 20, 36, 0.96), rgba(9, 15, 29, 0.98));
+    border-color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.35);
+    box-shadow: 0 12px 30px rgba(2, 8, 20, 0.38);
 
     & .status-bar {
         ${tw`w-2 bg-red-500 absolute right-0 z-20 rounded-full m-1 opacity-50 transition-all duration-150`};
@@ -42,8 +50,19 @@ const StatusIndicatorBox = styled(GreyRowBox)<{ $status: ServerPowerState | unde
                 : tw`bg-yellow-500`};
     }
 
+    &:hover {
+        border-color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.62);
+        background: linear-gradient(140deg, rgba(14, 24, 44, 0.98), rgba(10, 19, 35, 0.99));
+    }
+
     &:hover .status-bar {
         ${tw`opacity-75`};
+    }
+
+    & .icon {
+        color: #fee2e2;
+        background: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.2);
+        border: 1px solid rgba(var(--panel-accent-rgb, 239, 68, 68), 0.45);
     }
 `;
 
@@ -147,7 +166,7 @@ export default ({ server, className }: { server: Server; className?: string }) =
                                     {stats.cpuUsagePercent.toFixed(2)} %
                                 </IconDescription>
                             </div>
-                            <p css={tw`text-xs text-neutral-600 text-center mt-1`}>of {cpuLimit}</p>
+                            <p css={tw`text-xs text-neutral-500 text-center mt-1`}>of {cpuLimit}</p>
                         </div>
                         <div css={tw`flex-1 ml-4 sm:block hidden`}>
                             <div css={tw`flex justify-center`}>
@@ -156,7 +175,7 @@ export default ({ server, className }: { server: Server; className?: string }) =
                                     {bytesToString(stats.memoryUsageInBytes)}
                                 </IconDescription>
                             </div>
-                            <p css={tw`text-xs text-neutral-600 text-center mt-1`}>of {memoryLimit}</p>
+                            <p css={tw`text-xs text-neutral-500 text-center mt-1`}>of {memoryLimit}</p>
                         </div>
                         <div css={tw`flex-1 ml-4 sm:block hidden`}>
                             <div css={tw`flex justify-center`}>
@@ -165,7 +184,7 @@ export default ({ server, className }: { server: Server; className?: string }) =
                                     {bytesToString(stats.diskUsageInBytes)}
                                 </IconDescription>
                             </div>
-                            <p css={tw`text-xs text-neutral-600 text-center mt-1`}>of {diskLimit}</p>
+                            <p css={tw`text-xs text-neutral-500 text-center mt-1`}>of {diskLimit}</p>
                         </div>
                     </React.Fragment>
                 )}

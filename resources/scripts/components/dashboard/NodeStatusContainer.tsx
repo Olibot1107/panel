@@ -3,52 +3,175 @@ import useSWR from 'swr';
 import tw from 'twin.macro';
 import styled from 'styled-components/macro';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { faHdd, faMemory, faMicrochip, faServer } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '@/components/elements/Spinner';
 import PageContentBlock from '@/components/elements/PageContentBlock';
-import ContentBox from '@/components/elements/ContentBox';
 import getNodeStatuses, { NodeStatus } from '@/api/getNodeStatuses';
 import useFlash from '@/plugins/useFlash';
 import { useStoreState } from 'easy-peasy';
 import { Redirect } from 'react-router-dom';
 
+type Tone = 'green' | 'yellow' | 'red';
+
 const fmtPercent = (value: number | null) => (value === null ? '--' : `${value.toFixed(1)}%`);
 const fmtMb = (value: number) => `${value.toLocaleString()} MB`;
+
 const clampPercent = (value: number | null) => {
     if (value === null) return 0;
     return Math.max(0, Math.min(100, value));
 };
 
-const Meter = styled.div`
-    ${tw`mt-2 h-2 rounded bg-neutral-800 overflow-hidden`};
-`;
-
-const MeterFill = styled.div<{ $tone: 'green' | 'yellow' | 'red' }>`
-    ${tw`h-full transition-all duration-300`};
-
-    ${({ $tone }) => ($tone === 'green' ? tw`bg-green-500` : $tone === 'yellow' ? tw`bg-yellow-500` : tw`bg-red-500`)};
-`;
-
-const statusTone = (online: boolean, maintenance: boolean): 'green' | 'yellow' | 'red' => {
+const statusTone = (online: boolean, maintenance: boolean): Tone => {
     if (!online) return 'red';
     if (maintenance) return 'yellow';
     return 'green';
 };
 
-const StatusBadge = ({ online, maintenanceMode }: { online: boolean; maintenanceMode: boolean }) => {
-    const tone = statusTone(online, maintenanceMode);
-
-    return (
-        <span
-            css={[
-                tw`text-xs uppercase tracking-wide px-2 py-1 rounded`,
-                tone === 'green' ? tw`bg-green-500/20 text-green-300` : tone === 'yellow' ? tw`bg-yellow-500/20 text-yellow-300` : tw`bg-red-500/20 text-red-300`,
-            ]}
-        >
-            {!online ? 'Offline' : maintenanceMode ? 'Maintenance' : 'Online'}
-        </span>
-    );
+const usageTone = (percent: number | null, online: boolean, maintenance: boolean): Tone => {
+    if (!online) return 'red';
+    if (maintenance) return 'yellow';
+    if (percent !== null && percent >= 90) return 'red';
+    if (percent !== null && percent >= 75) return 'yellow';
+    return 'green';
 };
+
+const NodeGrid = styled.div`
+    ${tw`grid gap-5`};
+`;
+
+const NodeCard = styled.article`
+    ${tw`rounded-2xl p-6`};
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(160deg, rgba(14, 22, 38, 0.95), rgba(8, 14, 25, 0.96));
+    border: 1px solid rgba(var(--panel-accent-rgb, 239, 68, 68), 0.3);
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34);
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.2;
+        background-image: radial-gradient(rgba(var(--panel-accent-rgb, 239, 68, 68), 0.28) 1px, transparent 1px);
+        background-size: 20px 20px;
+    }
+
+    & > * {
+        position: relative;
+        z-index: 1;
+    }
+`;
+
+const NodeHeader = styled.div`
+    ${tw`flex items-center justify-between mb-4`};
+`;
+
+const NodeTitle = styled.div`
+    ${tw`flex items-center text-neutral-100`};
+
+    & > svg {
+        ${tw`mr-2`};
+        color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.9);
+    }
+
+    & > span {
+        ${tw`text-lg font-semibold`};
+    }
+`;
+
+const StatusBadge = styled.span<{ $tone: Tone }>`
+    ${tw`text-xs uppercase tracking-wide px-3 py-1 rounded-lg border`};
+
+    ${({ $tone }) => {
+        if ($tone === 'red') {
+            return `
+                color: #fecaca;
+                border-color: rgba(248, 113, 113, 0.45);
+                background: rgba(127, 29, 29, 0.35);
+            `;
+        }
+
+        if ($tone === 'yellow') {
+            return `
+                color: #fef3c7;
+                border-color: rgba(251, 191, 36, 0.45);
+                background: rgba(120, 53, 15, 0.35);
+            `;
+        }
+
+        return `
+            color: #f8fafc;
+            border-color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.45);
+            background: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.3);
+        `;
+    }}
+`;
+
+const MetricsGrid = styled.div`
+    ${tw`grid gap-3 md:grid-cols-3`};
+`;
+
+const MetricCardShell = styled.div`
+    ${tw`rounded-xl p-4`};
+    background: linear-gradient(165deg, rgba(24, 34, 52, 0.86), rgba(16, 24, 39, 0.86));
+    border: 1px solid rgba(71, 85, 105, 0.34);
+`;
+
+const MetricHead = styled.div`
+    ${tw`flex items-center justify-between`};
+`;
+
+const MetricTitle = styled.div`
+    ${tw`flex items-center text-neutral-200`};
+
+    & > svg {
+        ${tw`mr-2`};
+        color: rgba(148, 163, 184, 0.95);
+    }
+
+    & > span {
+        ${tw`text-xs uppercase tracking-wide`};
+    }
+`;
+
+const MetricPercent = styled.span`
+    ${tw`text-xs text-neutral-400`};
+`;
+
+const MetricPrimary = styled.p`
+    ${tw`mt-2 text-2xl text-neutral-100 font-semibold`};
+`;
+
+const MetricSecondary = styled.p`
+    ${tw`text-sm text-neutral-400`};
+`;
+
+const Meter = styled.div`
+    ${tw`mt-3 h-2 rounded overflow-hidden`};
+    background: rgba(71, 85, 105, 0.42);
+`;
+
+const MeterFill = styled.div<{ $tone: Tone }>`
+    ${tw`h-full transition-all duration-300`};
+
+    ${({ $tone }) => {
+        if ($tone === 'red') {
+            return 'background: linear-gradient(90deg, rgba(248, 113, 113, 0.95), rgba(220, 38, 38, 0.9));';
+        }
+
+        if ($tone === 'yellow') {
+            return 'background: linear-gradient(90deg, rgba(251, 191, 36, 0.95), rgba(245, 158, 11, 0.9));';
+        }
+
+        return 'background: linear-gradient(90deg, rgba(var(--panel-accent-rgb, 239, 68, 68), 0.95), rgba(var(--panel-accent-rgb, 239, 68, 68), 0.72));';
+    }}
+`;
+
+const EmptyState = styled.p`
+    ${tw`text-center text-sm text-neutral-400`};
+`;
 
 const MetricCard = ({
     icon,
@@ -58,27 +181,27 @@ const MetricCard = ({
     percent,
     tone,
 }: {
-    icon: any;
+    icon: IconDefinition;
     label: string;
     primary: string;
     secondary: string;
     percent: number | null;
-    tone: 'green' | 'yellow' | 'red';
+    tone: Tone;
 }) => (
-    <div css={tw`rounded bg-neutral-900/40 p-3`}>
-        <div css={tw`flex items-center justify-between`}>
-            <div css={tw`flex items-center text-neutral-200`}>
-                <FontAwesomeIcon icon={icon} css={tw`mr-2 text-neutral-400`} />
-                <span css={tw`text-xs uppercase tracking-wide`}>{label}</span>
-            </div>
-            <span css={tw`text-xs text-neutral-400`}>{fmtPercent(percent)}</span>
-        </div>
-        <div css={tw`mt-2 text-sm text-neutral-100`}>{primary}</div>
-        <div css={tw`text-xs text-neutral-400`}>{secondary}</div>
+    <MetricCardShell>
+        <MetricHead>
+            <MetricTitle>
+                <FontAwesomeIcon icon={icon} />
+                <span>{label}</span>
+            </MetricTitle>
+            <MetricPercent>{fmtPercent(percent)}</MetricPercent>
+        </MetricHead>
+        <MetricPrimary>{primary}</MetricPrimary>
+        <MetricSecondary>{secondary}</MetricSecondary>
         <Meter>
             <MeterFill $tone={tone} style={{ width: `${clampPercent(percent)}%` }} />
         </Meter>
-    </div>
+    </MetricCardShell>
 );
 
 export default () => {
@@ -99,27 +222,31 @@ export default () => {
             {!data ? (
                 <Spinner centered size={'large'} />
             ) : data.length === 0 ? (
-                <p css={tw`text-center text-sm text-neutral-400`}>No nodes found.</p>
+                <EmptyState>No nodes found.</EmptyState>
             ) : (
-                <div css={tw`grid gap-4`}>
-                    {data.map((node) => (
-                        <ContentBox key={node.uuid}>
-                            <div css={tw`space-y-4`}>
-                                <div css={tw`flex items-center justify-between`}>
-                                    <div css={tw`flex items-center text-neutral-300`}>
-                                        <FontAwesomeIcon icon={faServer} css={tw`mr-2 text-neutral-400`} />
-                                        <span css={tw`text-sm`}>{node.displayName}</span>
-                                    </div>
-                                    <StatusBadge online={node.online} maintenanceMode={node.maintenanceMode} />
-                                </div>
-                                <div css={tw`grid gap-3 md:grid-cols-3`}>
+                <NodeGrid>
+                    {data.map((node) => {
+                        const tone = statusTone(node.online, node.maintenanceMode);
+
+                        return (
+                            <NodeCard key={node.uuid}>
+                                <NodeHeader>
+                                    <NodeTitle>
+                                        <FontAwesomeIcon icon={faServer} />
+                                        <span>{node.displayName}</span>
+                                    </NodeTitle>
+                                    <StatusBadge $tone={tone}>
+                                        {!node.online ? 'Offline' : node.maintenanceMode ? 'Maintenance' : 'Online'}
+                                    </StatusBadge>
+                                </NodeHeader>
+                                <MetricsGrid>
                                     <MetricCard
                                         icon={faMicrochip}
                                         label={'CPU'}
                                         primary={`${node.cpu.cores || '--'} Cores`}
                                         secondary={`Allocated Limit: ${node.cpu.allocatedLimit}%`}
                                         percent={node.cpu.allocatedPercent}
-                                        tone={statusTone(node.online, node.maintenanceMode)}
+                                        tone={usageTone(node.cpu.allocatedPercent, node.online, node.maintenanceMode)}
                                     />
                                     <MetricCard
                                         icon={faMemory}
@@ -127,7 +254,11 @@ export default () => {
                                         primary={`${fmtMb(node.memory.allocatedMb)} / ${fmtMb(node.memory.totalMb)}`}
                                         secondary={'Allocated to servers'}
                                         percent={node.memory.allocatedPercent}
-                                        tone={statusTone(node.online, node.maintenanceMode)}
+                                        tone={usageTone(
+                                            node.memory.allocatedPercent,
+                                            node.online,
+                                            node.maintenanceMode
+                                        )}
                                     />
                                     <MetricCard
                                         icon={faHdd}
@@ -135,13 +266,13 @@ export default () => {
                                         primary={`${fmtMb(node.disk.allocatedMb)} / ${fmtMb(node.disk.totalMb)}`}
                                         secondary={'Allocated to servers'}
                                         percent={node.disk.allocatedPercent}
-                                        tone={statusTone(node.online, node.maintenanceMode)}
+                                        tone={usageTone(node.disk.allocatedPercent, node.online, node.maintenanceMode)}
                                     />
-                                </div>
-                            </div>
-                        </ContentBox>
-                    ))}
-                </div>
+                                </MetricsGrid>
+                            </NodeCard>
+                        );
+                    })}
+                </NodeGrid>
             )}
         </PageContentBlock>
     );
