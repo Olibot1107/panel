@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, RouteComponentProps } from 'react-router-dom';
-import login from '@/api/auth/login';
+import { Link } from 'react-router-dom';
+import register from '@/api/auth/register';
 import LoginFormContainer from '@/components/auth/LoginFormContainer';
 import { useStoreState } from 'easy-peasy';
 import { Formik, FormikHelpers } from 'formik';
-import { object, string } from 'yup';
+import { object, ref, string } from 'yup';
 import Field from '@/components/elements/Field';
 import tw from 'twin.macro';
 import Button from '@/components/elements/Button';
@@ -13,11 +13,15 @@ import useFlash from '@/plugins/useFlash';
 
 interface Values {
     username: string;
+    email: string;
+    firstName: string;
+    lastName: string;
     password: string;
+    passwordConfirmation: string;
 }
 
-const LoginContainer = ({ history }: RouteComponentProps) => {
-    const ref = useRef<Reaptcha>(null);
+export default () => {
+    const refElement = useRef<Reaptcha>(null);
     const [token, setToken] = useState('');
 
     const { clearFlashes, clearAndAddHttpError } = useFlash();
@@ -30,10 +34,8 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
     const onSubmit = (values: Values, { setSubmitting }: FormikHelpers<Values>) => {
         clearFlashes();
 
-        // If there is no token in the state yet, request the token and then abort this submit request
-        // since it will be re-submitted when the recaptcha data is returned by the component.
         if (recaptchaEnabled && !token) {
-            ref.current!.execute().catch((error) => {
+            refElement.current!.execute().catch((error) => {
                 console.error(error);
 
                 setSubmitting(false);
@@ -43,21 +45,16 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
             return;
         }
 
-        login({ ...values, recaptchaData: token })
-            .then((response) => {
-                if (response.complete) {
-                    // @ts-expect-error this is valid
-                    window.location = response.intended || '/';
-                    return;
-                }
-
-                history.replace('/auth/login/checkpoint', { token: response.confirmationToken });
+        register({ ...values, recaptchaData: token })
+            .then(() => {
+                // @ts-expect-error this is valid
+                window.location = '/';
             })
             .catch((error) => {
                 console.error(error);
 
                 setToken('');
-                if (ref.current) ref.current.reset();
+                if (refElement.current) refElement.current.reset();
 
                 setSubmitting(false);
                 clearAndAddHttpError({ error });
@@ -67,26 +64,58 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
     return (
         <Formik
             onSubmit={onSubmit}
-            initialValues={{ username: '', password: '' }}
+            initialValues={{
+                username: '',
+                email: '',
+                firstName: '',
+                lastName: '',
+                password: '',
+                passwordConfirmation: '',
+            }}
             validationSchema={object().shape({
-                username: string().required('A username or email must be provided.'),
-                password: string().required('Please enter your account password.'),
+                username: string().required('A username is required.'),
+                email: string().email('A valid email address is required.').required('Email is required.'),
+                firstName: string().required('First name is required.'),
+                lastName: string().required('Last name is required.'),
+                password: string().required('A password is required.').min(8, 'Password must be at least 8 characters.'),
+                passwordConfirmation: string()
+                    .required('Password confirmation is required.')
+                    // @ts-expect-error this is valid
+                    .oneOf([ref('password'), null], 'Passwords must match.'),
             })}
         >
             {({ isSubmitting, setSubmitting, submitForm }) => (
-                <LoginFormContainer title={'Login to Continue'} css={tw`w-full flex`}>
-                    <Field light type={'text'} label={'Username or Email'} name={'username'} disabled={isSubmitting} />
-                    <div css={tw`mt-6`}>
+                <LoginFormContainer title={'Create Your Account'} css={tw`w-full flex`}>
+                    <Field light type={'text'} label={'Username'} name={'username'} disabled={isSubmitting} />
+                    <div css={tw`mt-4`}>
+                        <Field light type={'email'} label={'Email'} name={'email'} disabled={isSubmitting} />
+                    </div>
+                    <div css={tw`mt-4`}>
+                        <Field light type={'text'} label={'First Name'} name={'firstName'} disabled={isSubmitting} />
+                    </div>
+                    <div css={tw`mt-4`}>
+                        <Field light type={'text'} label={'Last Name'} name={'lastName'} disabled={isSubmitting} />
+                    </div>
+                    <div css={tw`mt-4`}>
                         <Field light type={'password'} label={'Password'} name={'password'} disabled={isSubmitting} />
+                    </div>
+                    <div css={tw`mt-4`}>
+                        <Field
+                            light
+                            type={'password'}
+                            label={'Confirm Password'}
+                            name={'passwordConfirmation'}
+                            disabled={isSubmitting}
+                        />
                     </div>
                     <div css={tw`mt-6`}>
                         <Button type={'submit'} size={'xlarge'} isLoading={isSubmitting} disabled={isSubmitting}>
-                            Login
+                            Register
                         </Button>
                     </div>
                     {recaptchaEnabled && (
                         <Reaptcha
-                            ref={ref}
+                            ref={refElement}
                             size={'invisible'}
                             sitekey={siteKey || '_invalid_key'}
                             onVerify={(response) => {
@@ -101,18 +130,10 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
                     )}
                     <div css={tw`mt-6 text-center`}>
                         <Link
-                            to={'/auth/register'}
+                            to={'/auth/login'}
                             css={tw`text-xs text-neutral-500 tracking-wide no-underline uppercase hover:text-neutral-600`}
                         >
-                            Create account
-                        </Link>
-                    </div>
-                    <div css={tw`mt-3 text-center`}>
-                        <Link
-                            to={'/auth/password'}
-                            css={tw`text-xs text-neutral-500 tracking-wide no-underline uppercase hover:text-neutral-600`}
-                        >
-                            Forgot password?
+                            Return to Login
                         </Link>
                     </div>
                 </LoginFormContainer>
@@ -120,5 +141,3 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
         </Formik>
     );
 };
-
-export default LoginContainer;

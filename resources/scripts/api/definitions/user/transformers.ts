@@ -3,15 +3,6 @@ import { FractalResponseData } from '@/api/http';
 import { transform } from '@definitions/helpers';
 
 export default class Transformers {
-    static toSSHKey = (data: Record<any, any>): Models.SSHKey => {
-        return {
-            name: data.name,
-            publicKey: data.public_key,
-            fingerprint: data.fingerprint,
-            createdAt: new Date(data.created_at),
-        };
-    };
-
     static toUser = ({ attributes }: FractalResponseData): Models.User => {
         return {
             uuid: attributes.uuid,

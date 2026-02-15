@@ -1,9 +1,49 @@
 const path = require('node:path');
+const fs = require('node:fs');
 const webpack = require('webpack');
 const { WebpackAssetsManifest } = require('webpack-assets-manifest');
 const TerserPlugin = require('terser-webpack-plugin');
 
 const isProduction = process.env.NODE_ENV === 'production';
+const rawPublicPath = process.env.PUBLIC_PATH || process.env.WEBPACK_PUBLIC_PATH || '/assets/';
+const publicPath = rawPublicPath.endsWith('/') ? rawPublicPath : `${rawPublicPath}/`;
+const localCertsPath = path.join(__dirname, '../../docker/certificates');
+const localCertFiles = {
+    ca: path.join(localCertsPath, 'root_ca.pem'),
+    cert: path.join(localCertsPath, 'pterodactyl.test.pem'),
+    key: path.join(localCertsPath, 'pterodactyl.test-key.pem'),
+};
+
+const hasValidPemHeader = (filePath, header) => {
+    if (!fs.existsSync(filePath)) return false;
+
+    const content = fs.readFileSync(filePath, 'utf8');
+    return content.includes(header);
+};
+
+const localCertsConfigured =
+    process.env.USE_LOCAL_CERTS &&
+    hasValidPemHeader(localCertFiles.ca, '-----BEGIN CERTIFICATE-----') &&
+    hasValidPemHeader(localCertFiles.cert, '-----BEGIN CERTIFICATE-----') &&
+    hasValidPemHeader(localCertFiles.key, '-----BEGIN PRIVATE KEY-----');
+
+if (process.env.USE_LOCAL_CERTS && !localCertsConfigured) {
+    // Fall back to default dev-server HTTPS certs if local PEM files are unavailable or malformed.
+    console.warn(`USE_LOCAL_CERTS is set, but local certificates are missing/invalid at ${localCertsPath}.`);
+}
+
+let devServerPort = 5173;
+let devServerType = 'https';
+
+try {
+    if (/^https?:\/\//.test(publicPath)) {
+        const parsedPublicPath = new URL(publicPath);
+        devServerType = parsedPublicPath.protocol === 'http:' ? 'http' : 'https';
+        if (parsedPublicPath.port) devServerPort = Number(parsedPublicPath.port);
+    }
+} catch (error) {
+    console.warn(`Failed to parse public path "${publicPath}", using default dev server settings.`);
+}
 
 module.exports = {
     cache: true,
@@ -18,7 +58,7 @@ module.exports = {
         path: path.join(__dirname, '/public/assets'),
         filename: isProduction ? 'bundle.[chunkhash:8].js' : 'bundle.[fullhash:8].js',
         chunkFilename: isProduction ? '[name].[chunkhash:8].js' : '[name].[fullhash:8].js',
-        publicPath: process.env.WEBPACK_PUBLIC_PATH || '/assets/',
+        publicPath,
         crossOriginLoading: 'anonymous',
     },
     module: {
@@ -138,22 +178,16 @@ module.exports = {
     },
     devServer: {
         compress: true,
-        port: 5173,
+        port: devServerPort,
         server: {
-            type: 'https',
-            options: process.env.USE_LOCAL_CERTS
-                ? {
-                      ca: path.join(__dirname, '../../docker/certificates/root_ca.pem'),
-                      cert: path.join(__dirname, '../../docker/certificates/pterodactyl.test.pem'),
-                      key: path.join(__dirname, '../../docker/certificates/pterodactyl.test-key.pem'),
-                  }
-                : undefined,
+            type: devServerType,
+            options: devServerType === 'https' && localCertsConfigured ? localCertFiles : undefined,
         },
         static: {
             directory: path.join(__dirname, '/public'),
-            publicPath: process.env.WEBPACK_PUBLIC_PATH || '/assets/',
+            publicPath,
         },
-        allowedHosts: ['.pterodactyl.test'],
+        allowedHosts: 'all',
         headers: {
             'Access-Control-Allow-Origin': '*',
         },

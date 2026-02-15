@@ -2,6 +2,8 @@
 
 namespace Pterodactyl\Http\Controllers\Api\Client;
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\Permission;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -61,9 +63,85 @@ class ClientController extends ClientApiController
             $builder = $builder->whereIn('servers.id', $user->accessibleServers()->pluck('id')->all());
         }
 
+        $this->applyServerOrdering($builder, $user->server_order ?? []);
+
         $servers = $builder->paginate(min($request->query('per_page', 50), 100))->appends($request->query());
 
         return $this->fractal->transformWith($transformer)->collection($servers)->toArray();
+    }
+
+    /**
+     * Persist a preferred server order for the authenticated user.
+     */
+    public function reorderServers(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'server_ids' => ['required', 'array', 'min:1'],
+            'server_ids.*' => ['integer', 'distinct'],
+        ]);
+
+        $user = $request->user();
+        $accessibleIds = $user->accessibleServers()->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values();
+
+        $requested = collect($data['server_ids'])
+            ->map(fn ($id) => (int) $id)
+            ->intersect($accessibleIds)
+            ->values();
+
+        if ($requested->isEmpty()) {
+            return new JsonResponse([
+                'errors' => [[
+                    'code' => 'ValidationException',
+                    'status' => '422',
+                    'detail' => 'None of the provided server ids are accessible to this user.',
+                ]],
+            ], 422);
+        }
+
+        $currentOrder = collect($user->server_order ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->intersect($accessibleIds)
+            ->values();
+
+        $remaining = $currentOrder->reject(fn ($id) => $requested->contains($id))->values();
+        $unordered = $accessibleIds
+            ->reject(fn ($id) => $requested->contains($id) || $remaining->contains($id))
+            ->values();
+
+        $newOrder = $requested->concat($remaining)->concat($unordered)->values()->all();
+
+        $user->forceFill(['server_order' => $newOrder])->save();
+
+        return new JsonResponse(['data' => ['server_order' => $newOrder]]);
+    }
+
+    /**
+     * Apply user-selected server ordering with a deterministic fallback.
+     */
+    protected function applyServerOrdering(QueryBuilder $builder, array $order): void
+    {
+        $order = collect($order)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values();
+
+        if ($order->isEmpty()) {
+            $builder->orderByDesc('servers.id');
+            return;
+        }
+
+        $caseSql = 'CASE';
+        $bindings = [];
+        foreach ($order as $index => $id) {
+            $caseSql .= ' WHEN servers.id = ? THEN ' . $index;
+            $bindings[] = $id;
+        }
+        $caseSql .= ' ELSE ' . $order->count() . ' END';
+
+        $builder->orderByRaw($caseSql, $bindings)->orderByDesc('servers.id');
     }
 
     /**

@@ -34,4 +34,6 @@ resources/lang/locales.js
 
 /public/build
 /public/hot
+/public/uploads/*
+!/public/uploads/.gitignore
 result

@@ -99,7 +99,7 @@
         "babel-jest": "^28.1.1",
         "babel-loader": "^10.0.0",
         "babel-plugin-styled-components": "^2.0.7",
-        "cross-env": "^7.0.2",
+        "cross-env": "^10.1.0",
         "css-loader": "^7.1.2",
         "eslint": "^8",
         "eslint-config-prettier": "^8",
@@ -137,7 +137,7 @@
         "watch": "cross-env NODE_ENV=development ./node_modules/.bin/webpack --watch --progress",
         "build": "cross-env NODE_ENV=development ./node_modules/.bin/webpack --progress",
         "build:production": "yarn run clean && cross-env NODE_ENV=production ./node_modules/.bin/webpack --mode production",
-        "serve": "yarn run clean && cross-env NODE_ENV=development USE_LOCAL_CERTS=true WEBPACK_PUBLIC_PATH=https://pterodactyl.test:5173/ webpack serve --progress --hot --server-type https"
+        "serve": "yarn run clean && cross-env NODE_ENV=development webpack serve --progress --hot"
     },
     "browserslist": [
         "> 0.5%",

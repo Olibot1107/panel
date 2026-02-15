@@ -6,10 +6,12 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Auth\AuthManager;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Str;
 use Pterodactyl\Facades\Activity;
 use Pterodactyl\Services\Users\UserUpdateService;
 use Pterodactyl\Transformers\Api\Client\AccountTransformer;
 use Pterodactyl\Http\Requests\Api\Client\Account\UpdateEmailRequest;
+use Pterodactyl\Http\Requests\Api\Client\Account\UpdateAvatarRequest;
 use Pterodactyl\Http\Requests\Api\Client\Account\UpdatePasswordRequest;
 
 class AccountController extends ClientApiController
@@ -71,5 +73,45 @@ class AccountController extends ClientApiController
         }
 
         return new JsonResponse([], Response::HTTP_NO_CONTENT);
+    }
+
+    /**
+     * Upload or replace the authenticated user's profile photo.
+     *
+     * @throws \Throwable
+     */
+    public function updateAvatar(UpdateAvatarRequest $request): JsonResponse
+    {
+        $user = $request->user();
+        $file = $request->file('avatar');
+
+        $extension = mb_strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'png');
+        $filename = sprintf('%s_%s.%s', $user->uuid, Str::random(12), $extension);
+        $relativePath = 'uploads/avatars/' . $filename;
+        $avatarDirectory = public_path('uploads/avatars');
+
+        if (!is_dir($avatarDirectory)) {
+            mkdir($avatarDirectory, 0755, true);
+        }
+
+        $file->move($avatarDirectory, $filename);
+
+        $previous = $user->avatar;
+        $user->forceFill(['avatar' => $relativePath])->saveOrFail();
+
+        if (!empty($previous) && str_starts_with($previous, 'uploads/avatars/')) {
+            $previousPath = public_path($previous);
+            if (is_file($previousPath)) {
+                @unlink($previousPath);
+            }
+        }
+
+        Activity::event('user:account.avatar-updated')->log();
+
+        return new JsonResponse([
+            'data' => [
+                'avatar_url' => $user->refresh()->avatar_url,
+            ],
+        ]);
     }
 }

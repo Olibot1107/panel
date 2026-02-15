@@ -5,6 +5,7 @@ namespace Pterodactyl\Models;
 use Pterodactyl\Rules\Username;
 use Pterodactyl\Facades\Activity;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\In;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -41,6 +42,7 @@ use Pterodactyl\Notifications\SendPasswordReset as ResetPasswordNotification;
  * @property string|null $totp_secret
  * @property \Illuminate\Support\Carbon|null $totp_authenticated_at
  * @property bool $gravatar
+ * @property string|null $avatar
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Database\Eloquent\Collection|\Pterodactyl\Models\ApiKey[] $apiKeys
@@ -78,6 +80,7 @@ use Pterodactyl\Notifications\SendPasswordReset as ResetPasswordNotification;
  * @method static Builder|User whereUseTotp($value)
  * @method static Builder|User whereUsername($value)
  * @method static Builder|User whereUuid($value)
+ * @method static Builder|User whereAvatar($value)
  *
  * @mixin \Eloquent
  */
@@ -133,6 +136,7 @@ class User extends Model implements
         'totp_secret',
         'totp_authenticated_at',
         'gravatar',
+        'avatar',
         'root_admin',
     ];
 
@@ -143,6 +147,7 @@ class User extends Model implements
         'root_admin' => 'boolean',
         'use_totp' => 'boolean',
         'gravatar' => 'boolean',
+        'server_order' => 'array',
         'totp_authenticated_at' => 'datetime',
     ];
 
@@ -177,6 +182,7 @@ class User extends Model implements
         'language' => 'string',
         'use_totp' => 'boolean',
         'totp_secret' => 'nullable|string',
+        'avatar' => 'nullable|string|max:191',
     ];
 
     /**
@@ -199,8 +205,20 @@ class User extends Model implements
     public function toVueObject(): array
     {
         return Collection::make($this->toArray())->except(['id', 'external_id'])
-            ->merge(['identifier' => $this->identifier])
+            ->merge([
+                'identifier' => $this->identifier,
+                'avatar_url' => $this->avatar_url,
+            ])
             ->toArray();
+    }
+
+    public function getAvatarUrlAttribute(): string
+    {
+        if (!empty($this->avatar)) {
+            return url('/' . ltrim($this->avatar, '/'));
+        }
+
+        return 'https://gravatar.com/avatar/' . md5(Str::lower($this->email));
     }
 
     /**

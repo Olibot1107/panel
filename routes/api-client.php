@@ -18,7 +18,9 @@ use Pterodactyl\Http\Middleware\Api\Client\Server\AuthenticateServerAccess;
 |
 */
 Route::get('/', [Client\ClientController::class, 'index'])->name('api:client.index');
+Route::post('/servers/reorder', [Client\ClientController::class, 'reorderServers'])->name('api:client.servers.reorder');
 Route::get('/permissions', [Client\ClientController::class, 'permissions']);
+Route::get('/nodes/status', Client\NodeStatusController::class);
 
 Route::prefix('/account')->middleware(AccountSubject::class)->group(function () {
     Route::prefix('/')->withoutMiddleware(RequireTwoFactorAuthentication::class)->group(function () {
@@ -30,6 +32,7 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
 
     Route::put('/email', [Client\AccountController::class, 'updateEmail'])->name('api:client.account.update-email');
     Route::put('/password', [Client\AccountController::class, 'updatePassword'])->name('api:client.account.update-password');
+    Route::post('/avatar', [Client\AccountController::class, 'updateAvatar'])->name('api:client.account.update-avatar');
 
     Route::get('/activity', Client\ActivityLogController::class)->name('api:client.account.activity');
 
@@ -37,11 +40,6 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
     Route::post('/api-keys', [Client\ApiKeyController::class, 'store']);
     Route::delete('/api-keys/{identifier}', [Client\ApiKeyController::class, 'delete']);
 
-    Route::prefix('/ssh-keys')->group(function () {
-        Route::get('/', [Client\SSHKeyController::class, 'index']);
-        Route::post('/', [Client\SSHKeyController::class, 'store']);
-        Route::post('/remove', [Client\SSHKeyController::class, 'delete']);
-    });
 });
 
 /*

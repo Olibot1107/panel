@@ -1,10 +1,12 @@
 import { Action, action, Thunk, thunk } from 'easy-peasy';
 import updateAccountEmail from '@/api/account/updateAccountEmail';
+import updateAccountAvatar from '@/api/account/updateAccountAvatar';
 
 export interface UserData {
     uuid: string;
     username: string;
     email: string;
+    avatarUrl?: string;
     language: string;
     rootAdmin: boolean;
     useTotp: boolean;
@@ -17,6 +19,7 @@ export interface UserStore {
     setUserData: Action<UserStore, UserData>;
     updateUserData: Action<UserStore, Partial<UserData>>;
     updateUserEmail: Thunk<UserStore, { email: string; password: string }, any, UserStore, Promise<void>>;
+    updateUserAvatar: Thunk<UserStore, { file: File }, any, UserStore, Promise<void>>;
 }
 
 const user: UserStore = {
@@ -34,6 +37,11 @@ const user: UserStore = {
         await updateAccountEmail(payload.email, payload.password);
 
         actions.updateUserData({ email: payload.email });
+    }),
+
+    updateUserAvatar: thunk(async (actions, payload) => {
+        const avatarUrl = await updateAccountAvatar(payload.file);
+        if (avatarUrl) actions.updateUserData({ avatarUrl });
     }),
 };
 
