@@ -9,6 +9,7 @@ use Pterodactyl\Models\User;
 use Illuminate\Http\JsonResponse;
 use Pterodactyl\Facades\Activity;
 use Illuminate\Contracts\View\View;
+use Pterodactyl\Exceptions\DisplayException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class LoginController extends AbstractLoginController
@@ -51,6 +52,10 @@ class LoginController extends AbstractLoginController
         // can proceed to the next step in the login process.
         if (!password_verify($request->input('password'), $user->password)) {
             $this->sendFailedLoginResponse($request, $user);
+        }
+
+        if (!$user->root_admin && $user->isSuspended()) {
+            throw new DisplayException('This account has been suspended.');
         }
 
         if (!$user->use_totp) {

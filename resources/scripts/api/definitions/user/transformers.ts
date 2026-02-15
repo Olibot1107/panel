@@ -36,6 +36,20 @@ export default class Transformers {
             },
         };
     };
+
+    static toAccountNotification = ({ attributes }: FractalResponseData): Models.AccountNotification => {
+        return {
+            id: attributes.id,
+            type: attributes.type,
+            kind: attributes.kind ?? null,
+            title: attributes.title ?? null,
+            message: attributes.message ?? null,
+            actionUrl: attributes.action_url ?? null,
+            data: attributes.data || {},
+            readAt: attributes.read_at ? new Date(attributes.read_at) : null,
+            createdAt: attributes.created_at ? new Date(attributes.created_at) : null,
+        };
+    };
 }
 
 export class MetaTransformers {}

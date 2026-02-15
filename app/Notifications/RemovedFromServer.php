@@ -26,7 +26,7 @@ class RemovedFromServer extends Notification implements ShouldQueue
      */
     public function via(): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -40,5 +40,21 @@ class RemovedFromServer extends Notification implements ShouldQueue
             ->line('You have been removed as a subuser for the following server.')
             ->line('Server Name: ' . $this->server->name)
             ->action('Visit Panel', route('index'));
+    }
+
+    /**
+     * Get the array representation of the notification for database storage.
+     */
+    public function toArray(): array
+    {
+        return [
+            'kind' => 'server_invite',
+            'title' => 'Removed from server',
+            'message' => sprintf('You have been removed as a subuser for "%s".', $this->server->name),
+            'action_url' => '/',
+            'server' => [
+                'name' => $this->server->name,
+            ],
+        ];
     }
 }

@@ -11,6 +11,7 @@ import SettingsContainer from '@/components/server/settings/SettingsContainer';
 import AccountOverviewContainer from '@/components/dashboard/AccountOverviewContainer';
 import AccountApiContainer from '@/components/dashboard/AccountApiContainer';
 import ActivityLogContainer from '@/components/dashboard/activity/ActivityLogContainer';
+import AccountNotificationsContainer from '@/components/dashboard/AccountNotificationsContainer';
 import ServerActivityLogContainer from '@/components/server/ServerActivityLogContainer';
 
 // Each of the router files is already code split out appropriately — so
@@ -48,6 +49,11 @@ export default {
             name: 'Account',
             component: AccountOverviewContainer,
             exact: true,
+        },
+        {
+            path: '/notifications',
+            name: 'Notifications',
+            component: AccountNotificationsContainer,
         },
         {
             path: '/api',

@@ -10,6 +10,7 @@ use Pterodactyl\Models\Server;
 use Illuminate\Support\Facades\Log;
 use Pterodactyl\Models\ActivityLog;
 use Pterodactyl\Models\ActivityLogSubject;
+use Pterodactyl\Notifications\ServerCrashed;
 use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Http\Requests\Api\Remote\ActivityEventRequest;
 
@@ -31,6 +32,42 @@ class ActivityProcessingController extends Controller
             $server = $servers->get($datum['server']);
             if (is_null($server) || !Str::startsWith($datum['event'], 'server:')) {
                 continue;
+            }
+
+            // If Wings reports a crash/exit event, generate a database notification for the server owner.
+            // This is intentionally conservative and only triggers when we have strong evidence of a crash.
+            $metadata = $datum['metadata'] ?? [];
+            $isCrashEvent = in_array($datum['event'], ['server:crash', 'server:process.exit', 'server:oom', 'server:killed'], true)
+                || ($datum['event'] === 'server:power.stop' && (isset($metadata['exit_code']) || isset($metadata['signal']) || ($metadata['crash'] ?? false) === true));
+
+            if ($isCrashEvent) {
+                $server->loadMissing('user');
+
+                $exitCode = $metadata['exit_code'] ?? null;
+                $signal = $metadata['signal'] ?? null;
+
+                $shouldNotify = true;
+                $recent = $server->user->notifications()
+                    ->where('type', ServerCrashed::class)
+                    ->where('created_at', '>=', Carbon::now()->subMinutes(5))
+                    ->get(['data']);
+
+                foreach ($recent as $notification) {
+                    if (($notification->data['server']['uuid'] ?? null) === $server->uuid) {
+                        $shouldNotify = false;
+                        break;
+                    }
+                }
+
+                if ($shouldNotify) {
+                    $server->user->notify(new ServerCrashed(
+                        serverUuid: $server->uuid,
+                        serverName: $server->name,
+                        serverUuidShort: $server->uuidShort ?? null,
+                        exitCode: is_numeric($exitCode) ? (int) $exitCode : null,
+                        signal: is_string($signal) ? $signal : null,
+                    ));
+                }
             }
 
             try {

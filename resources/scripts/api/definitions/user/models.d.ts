@@ -26,3 +26,15 @@ interface ActivityLog extends Model<'actor'> {
         actor: User | null;
     };
 }
+
+interface AccountNotification extends Model {
+    id: string;
+    type: string;
+    kind: string | null;
+    title: string | null;
+    message: string | null;
+    actionUrl: string | null;
+    data: Record<string, unknown>;
+    readAt: Date | null;
+    createdAt: Date | null;
+}

@@ -38,6 +38,8 @@ use Pterodactyl\Notifications\SendPasswordReset as ResetPasswordNotification;
  * @property string|null $remember_token
  * @property string $language
  * @property bool $root_admin
+ * @property \Illuminate\Support\Carbon|null $suspended_at
+ * @property string|null $suspended_reason
  * @property bool $use_totp
  * @property string|null $totp_secret
  * @property \Illuminate\Support\Carbon|null $totp_authenticated_at
@@ -145,6 +147,7 @@ class User extends Model implements
      */
     protected $casts = [
         'root_admin' => 'boolean',
+        'suspended_at' => 'datetime',
         'use_totp' => 'boolean',
         'gravatar' => 'boolean',
         'server_order' => 'array',
@@ -162,6 +165,8 @@ class User extends Model implements
     protected $attributes = [
         'external_id' => null,
         'root_admin' => false,
+        'suspended_at' => null,
+        'suspended_reason' => null,
         'language' => 'en',
         'use_totp' => false,
         'totp_secret' => null,
@@ -313,5 +318,15 @@ class User extends Model implements
                 $builder->where('servers.owner_id', $this->id)->orWhere('subusers.user_id', $this->id);
             })
             ->groupBy('servers.id');
+    }
+
+    public function isSuspended(): bool
+    {
+        // Never consider root admins as suspended for safety.
+        if ($this->root_admin) {
+            return false;
+        }
+
+        return !is_null($this->suspended_at);
     }
 }

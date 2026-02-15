@@ -18,6 +18,7 @@ use Pterodactyl\Services\Users\UserUpdateService;
 use Pterodactyl\Traits\Helpers\AvailableLanguages;
 use Pterodactyl\Services\Users\UserCreationService;
 use Pterodactyl\Services\Users\UserDeletionService;
+use Pterodactyl\Services\Users\UserSuspensionService;
 use Pterodactyl\Http\Requests\Admin\UserFormRequest;
 use Pterodactyl\Http\Requests\Admin\NewUserFormRequest;
 use Pterodactyl\Contracts\Repository\UserRepositoryInterface;
@@ -33,6 +34,7 @@ class UserController extends Controller
         protected AlertsMessageBag $alert,
         protected UserCreationService $creationService,
         protected UserDeletionService $deletionService,
+        protected UserSuspensionService $suspensionService,
         protected Translator $translator,
         protected UserUpdateService $updateService,
         protected UserRepositoryInterface $repository,
@@ -97,6 +99,37 @@ class UserController extends Controller
         $this->deletionService->handle($user);
 
         return redirect()->route('admin.users');
+    }
+
+    /**
+     * Suspend or unsuspend a user account.
+     *
+     * @throws DisplayException
+     */
+    public function manageSuspension(Request $request, User $user): RedirectResponse
+    {
+        if ($request->user()->is($user)) {
+            throw new DisplayException('You cannot suspend your own account.');
+        }
+
+        if ($user->root_admin) {
+            throw new DisplayException('Cannot suspend an administrator account.');
+        }
+
+        $action = $request->input('action');
+        if (!in_array($action, ['suspend', 'unsuspend'], true)) {
+            throw new DisplayException('Invalid suspension action.');
+        }
+
+        if ($action === 'suspend') {
+            $this->suspensionService->suspend($user, $request->input('reason'));
+            $this->alert->success('Account suspended.')->flash();
+        } else {
+            $this->suspensionService->unsuspend($user);
+            $this->alert->success('Account unsuspended.')->flash();
+        }
+
+        return redirect()->route('admin.users.view', $user->id);
     }
 
     /**

@@ -102,6 +102,56 @@
             </div>
         </div>
     </form>
+    <div class="col-md-6">
+        <div class="box {{ is_null($user->suspended_at) ? 'box-default' : 'box-warning' }}">
+            <div class="box-header with-border">
+                <h3 class="box-title">Account Suspension</h3>
+            </div>
+            <div class="box-body">
+                @if($user->root_admin)
+                    <p class="no-margin">This user is an administrator and cannot be suspended.</p>
+                @else
+                    <p class="no-margin">
+                        Status:
+                        @if(is_null($user->suspended_at))
+                            <span class="label label-success">Active</span>
+                        @else
+                            <span class="label label-warning">Suspended</span>
+                        @endif
+                    </p>
+
+                    @if(!is_null($user->suspended_at))
+                        <p class="text-muted small" style="margin-top:8px;">
+                            Suspended at: {{ $user->suspended_at->toDayDateTimeString() }}
+                            @if(!empty($user->suspended_reason))
+                                <br />Reason: {{ $user->suspended_reason }}
+                            @endif
+                        </p>
+                    @endif
+                @endif
+            </div>
+            <div class="box-footer">
+                @if(!$user->root_admin)
+                    <form action="{{ route('admin.users.view.suspension', $user->id) }}" method="POST">
+                        {!! csrf_field() !!}
+                        <div class="form-group" style="margin-bottom:10px;">
+                            <label for="reason" class="control-label">Reason <span class="field-optional"></span></label>
+                            <input type="text" name="reason" class="form-control" maxlength="191" placeholder="Optional">
+                        </div>
+
+                        @if(is_null($user->suspended_at))
+                            <input type="hidden" name="action" value="suspend" />
+                            <button type="submit" class="btn btn-sm btn-warning pull-right">Suspend Account</button>
+                        @else
+                            <input type="hidden" name="action" value="unsuspend" />
+                            <button type="submit" class="btn btn-sm btn-success pull-right">Unsuspend Account</button>
+                        @endif
+                        <div class="clearfix"></div>
+                    </form>
+                @endif
+            </div>
+        </div>
+    </div>
     <div class="col-xs-12">
         <div class="box box-danger">
             <div class="box-header with-border">

@@ -13,8 +13,16 @@ use Pterodactyl\Listeners\TwoFactorListener;
 use Pterodactyl\Listeners\RevocationListener;
 use Pterodactyl\Observers\EggVariableObserver;
 use Pterodactyl\Listeners\AuthenticationListener;
+use Pterodactyl\Events\Server\Created as ServerCreatedEvent;
+use Pterodactyl\Events\Server\Deleting as ServerDeletingEvent;
 use Pterodactyl\Events\Server\Installed as ServerInstalledEvent;
+use Pterodactyl\Events\Server\Suspended as ServerSuspendedEvent;
+use Pterodactyl\Events\Server\Unsuspended as ServerUnsuspendedEvent;
+use Pterodactyl\Notifications\ServerCreated as ServerCreatedNotification;
+use Pterodactyl\Notifications\ServerDeleted as ServerDeletedNotification;
 use Pterodactyl\Notifications\ServerInstalled as ServerInstalledNotification;
+use Pterodactyl\Notifications\ServerSuspended as ServerSuspendedNotification;
+use Pterodactyl\Notifications\ServerUnsuspended as ServerUnsuspendedNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -23,7 +31,11 @@ class EventServiceProvider extends ServiceProvider
      * The event to listener mappings for the application.
      */
     protected $listen = [
+        ServerCreatedEvent::class => [ServerCreatedNotification::class],
+        ServerDeletingEvent::class => [ServerDeletedNotification::class],
         ServerInstalledEvent::class => [ServerInstalledNotification::class],
+        ServerSuspendedEvent::class => [ServerSuspendedNotification::class],
+        ServerUnsuspendedEvent::class => [ServerUnsuspendedNotification::class],
     ];
 
     protected $subscribe = [

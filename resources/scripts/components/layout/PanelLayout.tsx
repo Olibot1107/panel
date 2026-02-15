@@ -3,6 +3,7 @@ import { Link, NavLink } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faBookOpen,
+    faBell,
     faChartLine,
     faChevronDown,
     faFeatherAlt,
@@ -19,8 +20,17 @@ import { useStoreState } from 'easy-peasy';
 import { ApplicationStore } from '@/state';
 import NavigationBar from '@/components/NavigationBar';
 import { useLocation } from 'react-router';
+import { useAccountNotificationsUnreadCount } from '@/api/account/notifications';
 
-export type PanelActiveSection = 'dashboard' | 'servers' | 'status' | 'knowledge' | 'account' | 'api' | 'activity';
+export type PanelActiveSection =
+    | 'dashboard'
+    | 'servers'
+    | 'status'
+    | 'knowledge'
+    | 'account'
+    | 'notifications'
+    | 'api'
+    | 'activity';
 
 interface Props {
     children: React.ReactNode;
@@ -139,6 +149,14 @@ const SidebarLink = styled(NavLink)`
     ${tw`no-underline block`};
 `;
 
+const NavBadge = styled.span`
+    ${tw`ml-auto inline-flex items-center justify-center rounded-full text-xs font-semibold px-2 py-0.5 flex-shrink-0`};
+    color: #fff5f5;
+    background: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.95);
+    border: 1px solid rgba(var(--panel-accent-rgb, 239, 68, 68), 0.45);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
+`;
+
 const MainArea = styled.div`
     ${tw`min-w-0 relative`};
 
@@ -165,6 +183,7 @@ const activeFromPath = (pathname: string): PanelActiveSection => {
     if (pathname.startsWith('/status')) return 'status';
     if (pathname.startsWith('/account/activity')) return 'activity';
     if (pathname.startsWith('/account/api')) return 'api';
+    if (pathname.startsWith('/account/notifications')) return 'notifications';
     if (pathname.startsWith('/account')) return 'account';
     return 'dashboard';
 };
@@ -175,17 +194,20 @@ const NavItem = ({
     to,
     active,
     exact,
+    badge,
 }: {
     icon: IconDefinition;
     label: string;
     to: string;
     active: boolean;
     exact?: boolean;
+    badge?: number;
 }) => (
     <SidebarLink to={to} exact={exact}>
         <SidebarItemBase $active={active}>
             <FontAwesomeIcon icon={icon} />
-            {label}
+            <span>{label}</span>
+            {!!badge && badge > 0 && <NavBadge>{badge > 9 ? '9+' : badge}</NavBadge>}
         </SidebarItemBase>
     </SidebarLink>
 );
@@ -203,6 +225,8 @@ const PanelLayout = ({ children, topTitle, subHeader, activeSection }: Props) =>
     const brandingIcon = useStoreState((state: ApplicationStore) => state.settings.data?.branding?.icon || '');
     const rootAdmin = useStoreState((state: ApplicationStore) => state.user.data?.rootAdmin || false);
     const active = activeSection || activeFromPath(location.pathname);
+    const { data: unreadData } = useAccountNotificationsUnreadCount();
+    const unreadCount = unreadData?.unreadCount ?? 0;
 
     const brandIconSrc = brandingIcon ? `/${brandingIcon.replace(/^\/*/, '')}` : '';
 
@@ -248,6 +272,13 @@ const PanelLayout = ({ children, topTitle, subHeader, activeSection }: Props) =>
                         <FontAwesomeIcon icon={faChevronDown} />
                     </SectionTitle>
                     <NavItem icon={faUser} label={'Account'} to={'/account'} exact active={active === 'account'} />
+                    <NavItem
+                        icon={faBell}
+                        label={'Notifications'}
+                        to={'/account/notifications'}
+                        active={active === 'notifications'}
+                        badge={unreadCount}
+                    />
                     <NavItem icon={faKey} label={'API Credentials'} to={'/account/api'} active={active === 'api'} />
                     <NavItem
                         icon={faHistory}

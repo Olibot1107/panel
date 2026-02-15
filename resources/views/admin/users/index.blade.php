@@ -38,6 +38,7 @@
                             <th>Email</th>
                             <th>Client Name</th>
                             <th>Username</th>
+                            <th class="text-center">Status</th>
                             <th class="text-center">2FA</th>
                             <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="Servers that this user is marked as the owner of.">Servers Owned</span></th>
                             <th class="text-center"><span data-toggle="tooltip" data-placement="top" title="Servers that this user can access because they are marked as a subuser.">Can Access</span></th>
@@ -48,9 +49,24 @@
                         @foreach ($users as $user)
                             <tr class="align-middle">
                                 <td><code>{{ $user->id }}</code></td>
-                                <td><a href="{{ route('admin.users.view', $user->id) }}">{{ $user->email }}</a> @if($user->root_admin)<i class="fa fa-star text-yellow"></i>@endif</td>
+                                <td>
+                                    <a href="{{ route('admin.users.view', $user->id) }}">{{ $user->email }}</a>
+                                    @if($user->root_admin)
+                                        <i class="fa fa-star text-yellow"></i>
+                                    @endif
+                                    @if(!is_null($user->suspended_at))
+                                        <span class="label label-warning" style="margin-left:6px;">Suspended</span>
+                                    @endif
+                                </td>
                                 <td>{{ $user->name_last }}, {{ $user->name_first }}</td>
                                 <td>{{ $user->username }}</td>
+                                <td class="text-center">
+                                    @if(!is_null($user->suspended_at))
+                                        <span class="label label-warning">Suspended</span>
+                                    @else
+                                        <span class="label label-success">Active</span>
+                                    @endif
+                                </td>
                                 <td class="text-center">
                                     @if($user->use_totp)
                                         <i class="fa fa-lock text-green"></i>

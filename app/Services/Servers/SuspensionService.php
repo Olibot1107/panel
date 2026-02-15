@@ -4,6 +4,8 @@ namespace Pterodactyl\Services\Servers;
 
 use Webmozart\Assert\Assert;
 use Pterodactyl\Models\Server;
+use Pterodactyl\Events\Server\Suspended;
+use Pterodactyl\Events\Server\Unsuspended;
 use Pterodactyl\Repositories\Wings\DaemonServerRepository;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
@@ -57,5 +59,7 @@ class SuspensionService
             ]);
             throw $exception;
         }
+
+        event($isSuspending ? new Suspended($server) : new Unsuspended($server));
     }
 }

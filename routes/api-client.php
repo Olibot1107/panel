@@ -38,6 +38,12 @@ Route::prefix('/account')->middleware(AccountSubject::class)->group(function () 
 
     Route::get('/activity', Client\ActivityLogController::class)->name('api:client.account.activity');
 
+    Route::get('/notifications', [Client\AccountNotificationController::class, 'index'])->name('api:client.account.notifications');
+    Route::get('/notifications/unread-count', [Client\AccountNotificationController::class, 'unreadCount'])->name('api:client.account.notifications.unread-count');
+    Route::post('/notifications/read-all', [Client\AccountNotificationController::class, 'readAll'])->name('api:client.account.notifications.read-all');
+    Route::post('/notifications/{id}/read', [Client\AccountNotificationController::class, 'read'])->name('api:client.account.notifications.read');
+    Route::delete('/notifications/{id}', [Client\AccountNotificationController::class, 'delete'])->name('api:client.account.notifications.delete');
+
     Route::get('/api-keys', [Client\ApiKeyController::class, 'index']);
     Route::post('/api-keys', [Client\ApiKeyController::class, 'store']);
     Route::delete('/api-keys/{identifier}', [Client\ApiKeyController::class, 'delete']);
