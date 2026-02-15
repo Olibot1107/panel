@@ -81,6 +81,19 @@ function spawnAndWait(cmd, args, opts = {}) {
     });
 }
 
+function spawnQuietAndWait(cmd, args, opts = {}) {
+    return new Promise((resolve) => {
+        const child = spawn(cmd, args, { stdio: 'ignore', ...opts });
+        child.on('exit', (code) => resolve(code ?? 0));
+        child.on('error', () => resolve(127));
+    });
+}
+
+async function commandWorks(cmd, args = ['--version']) {
+    const code = await spawnQuietAndWait(cmd, args, { cwd: root });
+    return code === 0;
+}
+
 function nowIso() {
     return new Date().toISOString();
 }
@@ -101,6 +114,41 @@ function compactLogLine({ ts, url, ms }) {
     const targetWidth = 86;
     const dots = left.length >= targetWidth ? ' ' : ' ' + '.'.repeat(targetWidth - left.length);
     return `${left}${dots} ~ ${ms.toFixed(2)}ms`;
+}
+
+async function ensureYarn() {
+    if (await commandWorks('yarn')) return true;
+
+    // Node >=16 ships Corepack. Pin to Yarn classic (v1) because this repo has a v1 `yarn.lock`.
+    const hasCorepack = await commandWorks('corepack', ['--version']);
+    if (!hasCorepack) return false;
+
+    let code = await spawnAndWait('corepack', ['enable'], { cwd: root });
+    if (code !== 0) return false;
+
+    // Yarn v1 last release is 1.22.22; using stable could activate Yarn 3/4 and break installs.
+    code = await spawnAndWait('corepack', ['prepare', 'yarn@1.22.22', '--activate'], { cwd: root });
+    if (code !== 0) return false;
+
+    return await commandWorks('yarn');
+}
+
+async function ensureNodeModules() {
+    if (exists(nodeModulesPath)) return 0;
+    const ok = await ensureYarn();
+    if (!ok) return 127;
+
+    // Prefer deterministic installs; fall back if the project isn't compatible.
+    let code = await spawnAndWait('yarn', ['install', '--frozen-lockfile'], { cwd: root });
+    if (code !== 0) code = await spawnAndWait('yarn', ['install'], { cwd: root });
+    return code;
+}
+
+async function ensureComposerDeps() {
+    if (exists(vendorPath)) return 0;
+    const hasComposer = await commandWorks('composer');
+    if (!hasComposer) return 127;
+    return await spawnAndWait('composer', ['install', '--no-interaction'], { cwd: root });
 }
 
 function safeParseJson(text) {
@@ -311,6 +359,30 @@ function startProxyServer({ listenHost, listenPort, upstreamHost, upstreamPort, 
 }
 
 async function main() {
+    if (doInstall) {
+        const ok = await ensureYarn();
+        if (!ok) {
+            // eslint-disable-next-line no-console
+            console.warn('Missing `yarn`. Install Node >= 16 (Corepack) or install Yarn, then re-run.');
+        }
+
+        const nm = await ensureNodeModules();
+        if (nm !== 0 && nm !== 127) process.exit(nm);
+        if (nm === 127) {
+            // eslint-disable-next-line no-console
+            console.warn('Skipping `yarn install` (yarn not available).');
+        }
+
+        const comp = await ensureComposerDeps();
+        if (comp !== 0 && comp !== 127) process.exit(comp);
+        if (comp === 127) {
+            // eslint-disable-next-line no-console
+            console.warn('Skipping `composer install` (composer not available).');
+        }
+
+        if (argv.includes('--setup')) process.exit(0);
+    }
+
     if (doBuild) {
         // Always build once, so the bundle/manifest exists and matches your code.
         // This avoids "why didn't my changes show up?" confusion.

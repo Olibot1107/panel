@@ -3,16 +3,29 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>{{ config('app.name', 'Pterodactyl') }} - @yield('title')</title>
+        <title>{{ config('app.name', 'Voidium Pannel') }} - @yield('title')</title>
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <meta name="_token" content="{{ csrf_token() }}">
 
-        <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
-        <link rel="icon" type="image/png" href="/favicons/favicon-32x32.png" sizes="32x32">
-        <link rel="icon" type="image/png" href="/favicons/favicon-16x16.png" sizes="16x16">
+        @php
+            $brandIcon = trim((string) config('branding.icon', ''), '/');
+            $brandIconHref = !empty($brandIcon) ? ('/' . $brandIcon) : null;
+        @endphp
+
+        @if(!empty($brandIconHref))
+            <link rel="apple-touch-icon" sizes="180x180" href="{{ $brandIconHref }}">
+            <link rel="icon" type="image/png" href="{{ $brandIconHref }}" sizes="32x32">
+            <link rel="icon" type="image/png" href="{{ $brandIconHref }}" sizes="16x16">
+            <link rel="shortcut icon" href="{{ $brandIconHref }}">
+        @else
+            <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+            <link rel="icon" type="image/png" href="/favicons/favicon-32x32.png" sizes="32x32">
+            <link rel="icon" type="image/png" href="/favicons/favicon-16x16.png" sizes="16x16">
+            <link rel="shortcut icon" href="/favicons/favicon.ico">
+        @endif
+
         <link rel="manifest" href="/favicons/manifest.json">
         <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#bc6e3c">
-        <link rel="shortcut icon" href="/favicons/favicon.ico">
         <meta name="msapplication-config" content="/favicons/browserconfig.xml">
         <meta name="theme-color" content="#c65a16">
 
@@ -39,7 +52,7 @@
         <div class="wrapper">
             <header class="main-header">
                 <a href="{{ route('index') }}" class="logo">
-                    <span>{{ config('app.name', 'Pterodactyl') }}</span>
+                    <span>{{ config('app.name', 'Voidium Pannel') }}</span>
                 </a>
                 <nav class="navbar navbar-static-top">
                     <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">

@@ -20,7 +20,7 @@ return [
     |
     | Each panel installation is assigned a unique UUID to identify the
     | author of custom services, and make upgrades easier by identifying
-    | standard Pterodactyl shipped services.
+    | standard shipped services.
     */
 
     'service' => [
@@ -183,7 +183,7 @@ return [
     | Telemetry Settings
     |--------------------------------------------------------------------------
     |
-    | This section controls the telemetry sent by Pterodactyl.
+    | This section controls the telemetry sent by the panel.
     */
 
     'telemetry' => [

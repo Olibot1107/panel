@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>{{ config('app.name', 'Pterodactyl') }}</title>
+        <title>{{ config('app.name', 'Voidium Pannel') }}</title>
 
         @section('meta')
             <meta charset="utf-8">
@@ -9,12 +9,25 @@
             <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
             <meta name="csrf-token" content="{{ csrf_token() }}">
             <meta name="robots" content="noindex">
-            <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
-            <link rel="icon" type="image/png" href="/favicons/favicon-32x32.png" sizes="32x32">
-            <link rel="icon" type="image/png" href="/favicons/favicon-16x16.png" sizes="16x16">
+            @php
+                $brandIcon = trim((string) config('branding.icon', ''), '/');
+                $brandIconHref = !empty($brandIcon) ? ('/' . $brandIcon) : null;
+            @endphp
+
+            @if(!empty($brandIconHref))
+                <link rel="apple-touch-icon" sizes="180x180" href="{{ $brandIconHref }}">
+                <link rel="icon" type="image/png" href="{{ $brandIconHref }}" sizes="32x32">
+                <link rel="icon" type="image/png" href="{{ $brandIconHref }}" sizes="16x16">
+                <link rel="shortcut icon" href="{{ $brandIconHref }}">
+            @else
+                <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png">
+                <link rel="icon" type="image/png" href="/favicons/favicon-32x32.png" sizes="32x32">
+                <link rel="icon" type="image/png" href="/favicons/favicon-16x16.png" sizes="16x16">
+                <link rel="shortcut icon" href="/favicons/favicon.ico">
+            @endif
+
             <link rel="manifest" href="/favicons/manifest.json">
             <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg" color="#bc6e3c">
-            <link rel="shortcut icon" href="/favicons/favicon.ico">
             <meta name="msapplication-config" content="/favicons/browserconfig.xml">
             <meta name="theme-color" content="#c65a16">
         @show
@@ -22,7 +35,7 @@
         @section('user-data')
             @if(!is_null(Auth::user()))
                 <script>
-                    window.PterodactylUser = {!! json_encode(Auth::user()->toVueObject()) !!};
+                    window.VoidiumUser = {!! json_encode(Auth::user()->toVueObject()) !!};
                 </script>
             @endif
             @if(!empty($siteConfiguration))

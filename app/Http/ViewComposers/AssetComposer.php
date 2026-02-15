@@ -21,7 +21,7 @@ class AssetComposer
     {
         $view->with('asset', $this->assetHashService);
         $view->with('siteConfiguration', [
-            'name' => config('app.name') ?? 'Pterodactyl',
+            'name' => config('app.name') ?? 'Voidium Pannel',
             'locale' => config('app.locale') ?? 'en',
             'branding' => [
                 // Stored as a relative path under /public (e.g. "uploads/branding/panel-icon.png").

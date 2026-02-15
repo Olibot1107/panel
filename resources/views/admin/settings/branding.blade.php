@@ -29,13 +29,23 @@
                                     @php
                                         $icon = (string) config('branding.icon', '');
                                     @endphp
-                                    @if(!empty($icon))
-                                        <div style="margin: 0 0 1rem 0;">
-                                            <img src="/{{ $icon }}" alt="Panel Icon" style="width: 64px; height: 64px; object-fit: contain; background: #111; border: 1px solid #2b2b2b; border-radius: 14px; padding: 10px;">
+                                    <div style="display: flex; gap: 14px; align-items: flex-start;">
+                                        <div style="flex: 1 1 auto; min-width: 0;">
+                                            <input type="file" class="form-control" name="branding:icon_file" accept="image/png,image/jpeg,image/webp" />
+                                            <p class="text-muted" style="margin: .4rem 0 0 0;">
+                                                <small>Shows in the client panel sidebar brand and on the auth pages. PNG/JPG/WEBP up to 2MB.</small>
+                                            </p>
                                         </div>
-                                    @endif
-                                    <input type="file" class="form-control" name="branding:icon_file" accept="image/png,image/jpeg,image/webp" />
-                                    <p class="text-muted"><small>Shows in the client panel sidebar brand and on the auth pages. PNG/JPG/WEBP up to 2MB.</small></p>
+                                        @if(!empty($icon))
+                                            <div style="flex: 0 0 auto;">
+                                                <img
+                                                    src="/{{ $icon }}"
+                                                    alt="Panel Icon"
+                                                    style="width: 64px; height: 64px; object-fit: cover; background: #0b1220; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 14px;"
+                                                >
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                             <div class="form-group col-md-6">

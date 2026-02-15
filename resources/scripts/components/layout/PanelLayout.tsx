@@ -66,16 +66,17 @@ const Brand = styled(Link)`
 `;
 
 const BrandIcon = styled.div`
-    ${tw`w-9 h-9 rounded-full flex items-center justify-center text-neutral-100 mr-3`};
-    background: linear-gradient(
-        145deg,
-        rgba(var(--panel-accent-rgb, 239, 68, 68), 0.95),
-        rgba(var(--panel-accent-rgb, 239, 68, 68), 0.65)
-    );
+    ${tw`w-9 h-9 flex items-center justify-center text-neutral-100 mr-3`};
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(var(--panel-accent-rgb, 239, 68, 68), 0.6);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
 
     & > img {
-        ${tw`w-5 h-5 object-contain`};
-        filter: drop-shadow(0 6px 12px rgba(1, 6, 18, 0.45));
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
     }
 `;
 

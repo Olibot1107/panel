@@ -15,14 +15,14 @@ class UpgradeCommand extends Command
         {--user= : The user that PHP runs under. All files will be owned by this user.}
         {--group= : The group that PHP runs under. All files will be owned by this group.}
         {--url= : The specific archive to download.}
-        {--release= : A specific Pterodactyl version to download from GitHub. Leave blank to use latest.}
+        {--release= : A specific Voidium version to download from GitHub. Leave blank to use latest.}
         {--skip-download : If set no archive will be downloaded.}';
 
-    protected $description = 'Downloads a new archive for Pterodactyl from GitHub and then executes the normal upgrade commands.';
+    protected $description = 'Downloads a new archive for Voidium from GitHub and then executes the normal upgrade commands.';
 
     /**
      * Executes an upgrade command which will run through all of our standard
-     * commands for Pterodactyl and enable users to basically just download
+     * commands for Voidium and enable users to basically just download
      * the archive and execute this and be done.
      *
      * This places the application in maintenance mode as well while the commands

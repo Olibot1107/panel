@@ -21,7 +21,7 @@ const AuthenticationRouter = lazy(() => import(/* webpackChunkName: "auth" */ '@
 
 interface ExtendedWindow extends Window {
     SiteConfiguration?: SiteSettings;
-    PterodactylUser?: {
+    VoidiumUser?: {
         uuid: string;
         username: string;
         email: string;
@@ -39,18 +39,18 @@ interface ExtendedWindow extends Window {
 setupInterceptors(history);
 
 const App = () => {
-    const { PterodactylUser, SiteConfiguration } = window as ExtendedWindow;
-    if (PterodactylUser && !store.getState().user.data) {
+    const { VoidiumUser, SiteConfiguration } = window as ExtendedWindow;
+    if (VoidiumUser && !store.getState().user.data) {
         store.getActions().user.setUserData({
-            uuid: PterodactylUser.uuid,
-            username: PterodactylUser.username,
-            email: PterodactylUser.email,
-            avatarUrl: PterodactylUser.avatar_url,
-            language: PterodactylUser.language,
-            rootAdmin: PterodactylUser.root_admin,
-            useTotp: PterodactylUser.use_totp,
-            createdAt: new Date(PterodactylUser.created_at),
-            updatedAt: new Date(PterodactylUser.updated_at),
+            uuid: VoidiumUser.uuid,
+            username: VoidiumUser.username,
+            email: VoidiumUser.email,
+            avatarUrl: VoidiumUser.avatar_url,
+            language: VoidiumUser.language,
+            rootAdmin: VoidiumUser.root_admin,
+            useTotp: VoidiumUser.use_totp,
+            createdAt: new Date(VoidiumUser.created_at),
+            updatedAt: new Date(VoidiumUser.updated_at),
         });
     }
 
