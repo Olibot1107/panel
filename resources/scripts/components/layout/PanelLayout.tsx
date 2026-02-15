@@ -214,7 +214,6 @@ const PanelLayout = ({ children, topTitle, subHeader, activeSection }: Props) =>
                     </BrandIcon>
                     <BrandName>
                         <p>{name}</p>
-                        <span>Client Panel</span>
                     </BrandName>
                 </Brand>
                 <NavSection>

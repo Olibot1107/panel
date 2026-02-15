@@ -20,6 +20,7 @@ if (argv.includes('--help') || argv.includes('-h')) {
     // eslint-disable-next-line no-console
     console.log(`Usage:
   node server.js [--watch] [--no-build] [--no-proxy] [--log-body] [--tail] [--full] [--compact]
+                [--install] [--no-install] [--setup]
 
 Env:
   PANEL_HOST=127.0.0.1
@@ -30,6 +31,7 @@ Env:
   PANEL_LOG_BODY=0
   PANEL_TAIL=0
   PANEL_LOG_FORMAT=compact
+  PANEL_INSTALL=1
 `);
     process.exit(0);
 }
@@ -43,6 +45,10 @@ const doBuild = !argv.includes('--no-build') && process.env.PANEL_BUILD !== '0';
 const doProxy = !argv.includes('--no-proxy') && process.env.PANEL_PROXY !== '0';
 const logBody = argv.includes('--log-body') || process.env.PANEL_LOG_BODY === '1';
 const tailLaravelLog = argv.includes('--tail') || process.env.PANEL_TAIL === '1';
+const doInstall =
+    argv.includes('--setup') ||
+    argv.includes('--install') ||
+    (!argv.includes('--no-install') && process.env.PANEL_INSTALL !== '0');
 const logFormat = argv.includes('--full')
     ? 'full'
     : argv.includes('--compact')
@@ -52,6 +58,8 @@ const logFormat = argv.includes('--full')
 const root = __dirname;
 const manifestPath = path.join(root, 'public', 'assets', 'manifest.json');
 const laravelLogPath = path.join(root, 'storage', 'logs', 'laravel.log');
+const nodeModulesPath = path.join(root, 'node_modules');
+const vendorPath = path.join(root, 'vendor');
 
 function exists(p) {
     try {
