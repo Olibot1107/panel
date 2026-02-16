@@ -37,7 +37,7 @@ Env:
 }
 
 const host = process.env.PANEL_HOST || '127.0.0.1';
-const port = 80
+const port = 800
 const upstreamHost = process.env.PANEL_UPSTREAM_HOST || '127.0.0.1';
 const upstreamPort = 80
 const watch = argv.includes('--watch') || process.env.PANEL_WATCH === '1';
