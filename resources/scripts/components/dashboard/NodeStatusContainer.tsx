@@ -16,6 +16,7 @@ type Tone = 'green' | 'yellow' | 'red';
 
 const fmtPercent = (value: number | null) => (value === null ? '--' : `${value.toFixed(1)}%`);
 const fmtMb = (value: number) => `${value.toLocaleString()} MB`;
+const fmtMbOrDash = (value: number | null) => (value === null ? '--' : fmtMb(value));
 
 const clampPercent = (value: number | null) => {
     if (value === null) return 0;
@@ -244,29 +245,31 @@ export default () => {
                                         icon={faMicrochip}
                                         label={'CPU'}
                                         primary={`${node.cpu.cores || '--'} Cores`}
-                                        secondary={`Allocated Limit: ${node.cpu.allocatedLimit}%`}
-                                        percent={node.cpu.allocatedPercent}
-                                        tone={usageTone(node.cpu.allocatedPercent, node.online, node.maintenanceMode)}
+                                        secondary={
+                                            node.cpu.currentPercent === null
+                                                ? 'Live load unavailable'
+                                                : node.cpu.loadAverage1m === null
+                                                  ? 'Current backend load'
+                                                  : `Load avg (1m): ${node.cpu.loadAverage1m.toFixed(2)}`
+                                        }
+                                        percent={node.cpu.currentPercent}
+                                        tone={usageTone(node.cpu.currentPercent, node.online, node.maintenanceMode)}
                                     />
                                     <MetricCard
                                         icon={faMemory}
                                         label={'Memory'}
-                                        primary={`${fmtMb(node.memory.allocatedMb)} / ${fmtMb(node.memory.totalMb)}`}
-                                        secondary={'Allocated to servers'}
-                                        percent={node.memory.allocatedPercent}
-                                        tone={usageTone(
-                                            node.memory.allocatedPercent,
-                                            node.online,
-                                            node.maintenanceMode
-                                        )}
+                                        primary={`${fmtMbOrDash(node.memory.usedMb)} / ${fmtMb(node.memory.totalMb)}`}
+                                        secondary={node.memory.usedMb === null ? 'Live usage unavailable' : 'Current backend usage'}
+                                        percent={node.memory.usedPercent}
+                                        tone={usageTone(node.memory.usedPercent, node.online, node.maintenanceMode)}
                                     />
                                     <MetricCard
                                         icon={faHdd}
                                         label={'Disk'}
-                                        primary={`${fmtMb(node.disk.allocatedMb)} / ${fmtMb(node.disk.totalMb)}`}
-                                        secondary={'Allocated to servers'}
-                                        percent={node.disk.allocatedPercent}
-                                        tone={usageTone(node.disk.allocatedPercent, node.online, node.maintenanceMode)}
+                                        primary={`${fmtMbOrDash(node.disk.usedMb)} / ${fmtMb(node.disk.totalMb)}`}
+                                        secondary={node.disk.usedMb === null ? 'Live usage unavailable' : 'Current backend usage'}
+                                        percent={node.disk.usedPercent}
+                                        tone={usageTone(node.disk.usedPercent, node.online, node.maintenanceMode)}
                                     />
                                 </MetricsGrid>
                             </NodeCard>
