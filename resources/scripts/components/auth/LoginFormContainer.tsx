@@ -89,7 +89,7 @@ export default forwardRef<HTMLFormElement, Props>(({ title, subtitle, variant = 
             'Secure access to deployments, monitoring, and account tools using the same interface style as your dashboard.'
     );
 
-    const heroIconSrc = brandingIcon ? `/${brandingIcon.replace(/^\/*/, '')}` : '/assets/svgs/voidium.svg';
+    const heroIconSrc = brandingIcon ? `/${brandingIcon.replace(/^\/*/, '')}` : '/assets/svgs/pterodactyl.svg';
 
     if (variant === 'dashboard') {
         return (
