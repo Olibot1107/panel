@@ -12,8 +12,16 @@ class EnsureRegistrationEnabled
 {
     public function handle(Request $request, Closure $next): Response
     {
+        $hasUsers = true;
+        try {
+            $hasUsers = User::query()->exists();
+        } catch (\Throwable) {
+            // If the database cannot be queried, fall back to normal
+            // registration setting behavior without crashing the request.
+        }
+
         // Always allow creating the first account so the panel can be bootstrapped.
-        if (config('pterodactyl.auth.registration_enabled', true) || !User::query()->exists()) {
+        if (config('pterodactyl.auth.registration_enabled', true) || !$hasUsers) {
             return $next($request);
         }
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Dev entrypoint: `node server.js`
+// Official local runner: `node server.js`
 // - builds frontend assets once (yarn build) so the panel loads
 // - starts Laravel's dev server (php artisan serve)
 // - starts a tiny reverse proxy in front that prints richer HTTP request logs
@@ -19,25 +19,47 @@ const argv = process.argv.slice(2);
 if (argv.includes('--help') || argv.includes('-h')) {
     // eslint-disable-next-line no-console
     console.log(`Usage:
-  node server.js [--watch] [--no-build] [--no-proxy] [--log-body] [--tail] [--full] [--compact]
+  node server.js [--watch] [--no-build] [--proxy|--no-proxy] [--log-body] [--tail] [--full] [--compact]
                 [--install] [--no-install] [--setup]
 
 Env:
+  PANEL_HOST=0.0.0.0
+  PANEL_PORT=800
+  PANEL_UPSTREAM_HOST=127.0.0.1
+  PANEL_UPSTREAM_PORT=80
+  PANEL_PROXY=1
+  PANEL_HTTPS=0
+  PANEL_FORWARDED_PROTO=http
   PANEL_LOG_BODY=0
   PANEL_TAIL=0
   PANEL_LOG_FORMAT=compact
-  PANEL_INSTALL=1a
+  PANEL_INSTALL=1
 `);
     process.exit(0);
 }
 
-const host = "0.0.0.0"
+function envFlag(name, defaultValue = false) {
+    const raw = process.env[name];
+    if (raw === undefined) return defaultValue;
+    return ['1', 'true', 'yes', 'on'].includes(String(raw).toLowerCase());
+}
+
+function envInt(name, defaultValue) {
+    const raw = process.env[name];
+    if (raw === undefined || raw === '') return defaultValue;
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isFinite(parsed) ? parsed : defaultValue;
+}
+
+const host = '127.0.0.1'
 const port = 800
 const upstreamHost = '0.0.0.0'
 const upstreamPort = 80
 const watch = argv.includes('--watch') || process.env.PANEL_WATCH === '1';
 const doBuild = !argv.includes('--no-build') && process.env.PANEL_BUILD !== '0';
-const doProxy = 1
+const doProxy =
+    !argv.includes('--no-proxy') &&
+    (argv.includes('--proxy') || process.env.PANEL_PROXY === undefined || envFlag('PANEL_PROXY', true));
 const logBody = argv.includes('--log-body') || process.env.PANEL_LOG_BODY === '1';
 const tailLaravelLog = argv.includes('--tail') || process.env.PANEL_TAIL === '1';
 const doInstall =
@@ -49,6 +71,7 @@ const logFormat = argv.includes('--full')
     : argv.includes('--compact')
       ? 'compact'
       : (process.env.PANEL_LOG_FORMAT || 'compact');
+const forwardedProto = process.env.PANEL_FORWARDED_PROTO || (envFlag('PANEL_HTTPS') ? 'https' : 'http');
 
 const root = __dirname;
 const manifestPath = path.join(root, 'public', 'assets', 'manifest.json');
@@ -151,7 +174,7 @@ function safeParseJson(text) {
         return JSON.parse(text);
     } catch {
         return null;
-    }
+    } 
 }
 
 function redactSecrets(value) {
@@ -212,7 +235,15 @@ function startLaravelLogTail() {
     return watcher;
 }
 
-function startProxyServer({ listenHost, listenPort, upstreamHost, upstreamPort, logBody, logFormat }) {
+function startProxyServer({
+    listenHost,
+    listenPort,
+    upstreamHost,
+    upstreamPort,
+    logBody,
+    logFormat,
+    forwardedProto,
+}) {
     const server = http.createServer((req, res) => {
         const start = process.hrtime.bigint();
         const id = Math.random().toString(16).slice(2, 10);
@@ -243,6 +274,9 @@ function startProxyServer({ listenHost, listenPort, upstreamHost, upstreamPort, 
         });
         req.pipe(reqTee);
 
+        const incomingForwardedProto = req.headers['x-forwarded-proto']?.toString().split(',')[0].trim();
+        const resolvedForwardedProto = incomingForwardedProto || forwardedProto;
+
         const upstreamReq = http.request(
             {
                 host: upstreamHost,
@@ -251,9 +285,10 @@ function startProxyServer({ listenHost, listenPort, upstreamHost, upstreamPort, 
                 path: url,
                 headers: {
                     ...req.headers,
-                    host: `${upstreamHost}:${upstreamPort}`,
+                    host: req.headers.host || `${upstreamHost}:${upstreamPort}`,
                     'x-forwarded-host': req.headers.host,
-                    'x-forwarded-proto': 'http',
+                    'x-forwarded-proto': resolvedForwardedProto,
+                    'x-forwarded-port': req.headers['x-forwarded-port'] || String(listenPort),
                     'x-forwarded-for': req.headers['x-forwarded-for']
                         ? req.headers['x-forwarded-for']
                         : ip,
@@ -308,14 +343,14 @@ function startProxyServer({ listenHost, listenPort, upstreamHost, upstreamPort, 
                 // eslint-disable-next-line no-console
                 console.log(compactLogLine({ ts: nowLocalStamp(), url, ms }));
             } else {
-            // eslint-disable-next-line no-console
-            console.log(
-                `[${nowIso()}] ${id} ${method} 502 ${url} ${ms.toFixed(
-                    1
-                )}ms req=${formatBytes(reqBytes)} res=0B ip=${ip} upstream_error="${String(
-                    err?.message || err
-                )}"`
-            );
+                // eslint-disable-next-line no-console
+                console.log(
+                    `[${nowIso()}] ${id} ${method} 502 ${url} ${ms.toFixed(
+                        1
+                    )}ms req=${formatBytes(reqBytes)} res=0B ip=${ip} upstream_error="${String(
+                        err?.message || err
+                    )}"`
+                );
             }
             res.statusCode = 502;
             res.setHeader('content-type', 'text/plain; charset=utf-8');
@@ -354,6 +389,14 @@ function startProxyServer({ listenHost, listenPort, upstreamHost, upstreamPort, 
 }
 
 async function main() {
+    if (doProxy && host === upstreamHost && Number(port) === Number(upstreamPort)) {
+        // eslint-disable-next-line no-console
+        console.error(
+            'Proxy listen host/port and upstream host/port are identical. Set PANEL_UPSTREAM_PORT to a different port (default 80).'
+        );
+        process.exit(1);
+    }
+
     if (doInstall) {
         const ok = await ensureYarn();
         if (!ok) {
@@ -415,10 +458,13 @@ async function main() {
             upstreamPort,
             logBody,
             logFormat,
+            forwardedProto,
         });
 
         // eslint-disable-next-line no-console
-        console.log(`[${nowLocalStamp()}] proxy http://${host}:${port} -> http://${upstreamHost}:${upstreamPort}`);
+        console.log(
+            `[${nowLocalStamp()}] proxy http://${host}:${port} -> http://${upstreamHost}:${upstreamPort} (x-forwarded-proto=${forwardedProto})`
+        );
     }
 
     const shutdown = (signal) => {

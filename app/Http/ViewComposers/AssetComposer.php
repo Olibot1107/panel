@@ -20,6 +20,14 @@ class AssetComposer
      */
     public function compose(View $view): void
     {
+        $firstUserSetup = false;
+        try {
+            $firstUserSetup = !User::query()->exists();
+        } catch (\Throwable) {
+            // If the database is unavailable (or migrations are incomplete),
+            // don't hard-fail view rendering on auth pages.
+        }
+
         $view->with('asset', $this->assetHashService);
         $view->with('siteConfiguration', [
             'name' => config('app.name') ?? 'Voidium Pannel',
@@ -37,7 +45,7 @@ class AssetComposer
             ],
             'registration' => [
                 'enabled' => config('pterodactyl.auth.registration_enabled', true),
-                'firstUserSetup' => !User::query()->exists(),
+                'firstUserSetup' => $firstUserSetup,
             ],
         ]);
     }

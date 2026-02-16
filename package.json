@@ -137,7 +137,10 @@
         "build": "cross-env NODE_ENV=development ./node_modules/.bin/webpack --progress",
         "build:production": "yarn run clean && cross-env NODE_ENV=production ./node_modules/.bin/webpack --mode production",
         "serve": "yarn run clean && cross-env NODE_ENV=development webpack serve --progress --hot",
-        "panel": "node server.js"
+        "panel": "node server.js",
+        "start": "node server.js",
+        "dev": "node server.js --watch",
+        "setup": "node server.js --setup"
     },
     "browserslist": [
         "> 0.5%",
