@@ -3,6 +3,7 @@
 namespace Pterodactyl\Http\ViewComposers;
 
 use Illuminate\View\View;
+use Pterodactyl\Models\User;
 use Pterodactyl\Services\Helpers\AssetHashService;
 
 class AssetComposer
@@ -36,6 +37,7 @@ class AssetComposer
             ],
             'registration' => [
                 'enabled' => config('pterodactyl.auth.registration_enabled', true),
+                'firstUserSetup' => !User::query()->exists(),
             ],
         ]);
     }

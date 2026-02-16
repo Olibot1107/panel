@@ -62,6 +62,17 @@ const DashboardHero = styled.aside`
     }
 `;
 
+const HeroIconWrap = styled.div`
+    ${tw`w-14 h-14 rounded-2xl p-2 flex items-center justify-center`};
+    background: linear-gradient(160deg, rgba(15, 24, 42, 0.9), rgba(10, 16, 30, 0.98));
+    border: 1px solid rgba(var(--panel-accent-rgb, 239, 68, 68), 0.76);
+    box-shadow: 0 12px 28px rgba(var(--panel-accent-rgb, 239, 68, 68), 0.24);
+
+    & > img {
+        ${tw`block w-full h-full rounded-xl object-contain`};
+    }
+`;
+
 const DashboardCard = styled.div`
     ${tw`rounded-xl p-6 lg:p-8`};
     background: linear-gradient(145deg, rgba(11, 19, 34, 0.94), rgba(9, 16, 30, 0.96));
@@ -98,7 +109,9 @@ export default forwardRef<HTMLFormElement, Props>(({ title, subtitle, variant = 
                 <Form {...props} ref={ref}>
                     <DashboardShell>
                         <DashboardHero>
-                            <img src={heroIconSrc} css={tw`block w-12 h-12 object-contain`} />
+                            <HeroIconWrap>
+                                <img src={heroIconSrc} alt={'Panel icon'} />
+                            </HeroIconWrap>
                             <h3>{authHeroTitle}</h3>
                             <p>{authHeroTagline}</p>
                         </DashboardHero>

@@ -26,17 +26,13 @@ export default () => {
 
     const { clearFlashes, clearAndAddHttpError } = useFlash();
     const { enabled: recaptchaEnabled, siteKey } = useStoreState((state) => state.settings.data!.recaptcha);
-    const { enabled: registrationEnabled, firstUserSetup } = useStoreState((state) => state.settings.data!.registration);
+    const { firstUserSetup } = useStoreState((state) => state.settings.data!.registration);
 
     useEffect(() => {
         clearFlashes();
     }, []);
 
-    if (firstUserSetup) {
-        return <Redirect to={'/auth/setup'} />;
-    }
-
-    if (!registrationEnabled) {
+    if (!firstUserSetup) {
         return <Redirect to={'/auth/login'} />;
     }
 
@@ -97,8 +93,8 @@ export default () => {
         >
             {({ isSubmitting, setSubmitting, submitForm }) => (
                 <LoginFormContainer
-                    title={'Create Your Account'}
-                    subtitle={'Set up your panel access with the same interface style as your dashboard.'}
+                    title={'Create First Admin Account'}
+                    subtitle={'Set up the first panel account. This account will be created as an administrator.'}
                     variant={'dashboard'}
                     css={tw`w-full flex`}
                 >
@@ -125,7 +121,7 @@ export default () => {
                     </div>
                     <div css={tw`mt-6`}>
                         <Button type={'submit'} size={'xlarge'} isLoading={isSubmitting} disabled={isSubmitting}>
-                            Register
+                            Create Admin Account
                         </Button>
                     </div>
                     {recaptchaEnabled && (
@@ -143,25 +139,9 @@ export default () => {
                             }}
                         />
                     )}
-                    <div css={tw`mt-6 text-center`}>
-                        <Link
-                            to={'/auth/login'}
-                            css={[
-                                tw`text-xs tracking-wide no-underline uppercase`,
-                                `
-                                    color: rgba(var(--panel-accent-rgb, 239, 68, 68), 0.9);
-
-                                    &:hover {
-                                        color: rgba(var(--panel-accent-rgb, 239, 68, 68), 1);
-                                    }
-                                `,
-                            ]}
-                        >
-                            Return to Login
-                        </Link>
-                    </div>
                 </LoginFormContainer>
             )}
         </Formik>
     );
 };
+

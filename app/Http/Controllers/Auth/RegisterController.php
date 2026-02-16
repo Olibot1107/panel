@@ -24,6 +24,7 @@ class RegisterController extends AbstractLoginController
     public function register(RegisterRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $isFirstUser = !User::query()->exists();
 
         $user = new User();
         $user->forceFill([
@@ -33,6 +34,7 @@ class RegisterController extends AbstractLoginController
             'name_first' => $data['name_first'],
             'name_last' => $data['name_last'],
             'password' => $this->hasher->make($data['password']),
+            'root_admin' => $isFirstUser,
         ])->saveOrFail();
 
         return $this->sendLoginResponse($user, $request);

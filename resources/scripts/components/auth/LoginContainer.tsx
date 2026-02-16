@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, RouteComponentProps } from 'react-router-dom';
+import { Link, Redirect, RouteComponentProps } from 'react-router-dom';
 import login from '@/api/auth/login';
 import LoginFormContainer from '@/components/auth/LoginFormContainer';
 import { useStoreState } from 'easy-peasy';
@@ -22,11 +22,15 @@ const LoginContainer = ({ history }: RouteComponentProps) => {
 
     const { clearFlashes, clearAndAddHttpError } = useFlash();
     const { enabled: recaptchaEnabled, siteKey } = useStoreState((state) => state.settings.data!.recaptcha);
-    const registrationEnabled = useStoreState((state) => state.settings.data!.registration.enabled);
+    const { enabled: registrationEnabled, firstUserSetup } = useStoreState((state) => state.settings.data!.registration);
 
     useEffect(() => {
         clearFlashes();
     }, []);
+
+    if (firstUserSetup) {
+        return <Redirect to={'/auth/setup'} />;
+    }
 
     const onSubmit = (values: Values, { setSubmitting }: FormikHelpers<Values>) => {
         clearFlashes();

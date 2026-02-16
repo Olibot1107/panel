@@ -4,6 +4,7 @@ namespace Pterodactyl\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Pterodactyl\Models\User;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -11,7 +12,8 @@ class EnsureRegistrationEnabled
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (config('pterodactyl.auth.registration_enabled', true)) {
+        // Always allow creating the first account so the panel can be bootstrapped.
+        if (config('pterodactyl.auth.registration_enabled', true) || !User::query()->exists()) {
             return $next($request);
         }
 
@@ -24,4 +26,3 @@ class EnsureRegistrationEnabled
         throw new NotFoundHttpException('Registration is disabled.');
     }
 }
-

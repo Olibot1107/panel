@@ -6,7 +6,6 @@ import {
     faBell,
     faChartLine,
     faChevronDown,
-    faFeatherAlt,
     faHistory,
     faHome,
     faKey,
@@ -228,14 +227,14 @@ const PanelLayout = ({ children, topTitle, subHeader, activeSection }: Props) =>
     const { data: unreadData } = useAccountNotificationsUnreadCount();
     const unreadCount = unreadData?.unreadCount ?? 0;
 
-    const brandIconSrc = brandingIcon ? `/${brandingIcon.replace(/^\/*/, '')}` : '';
+    const brandIconSrc = brandingIcon ? `/${brandingIcon.replace(/^\/*/, '')}` : '/assets/svgs/pterodactyl.svg';
 
     return (
         <Shell>
             <Sidebar>
                 <Brand to={'/'}>
                     <BrandIcon>
-                        {brandIconSrc ? <img src={brandIconSrc} alt={name} /> : <FontAwesomeIcon icon={faFeatherAlt} />}
+                        <img src={brandIconSrc} alt={name} />
                     </BrandIcon>
                     <BrandName>
                         <p>{name}</p>

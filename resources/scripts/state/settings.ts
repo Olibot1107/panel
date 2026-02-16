@@ -14,6 +14,7 @@ export interface SiteSettings {
     };
     registration: {
         enabled: boolean;
+        firstUserSetup: boolean;
     };
 }
 
