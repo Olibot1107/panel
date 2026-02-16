@@ -23,26 +23,21 @@ if (argv.includes('--help') || argv.includes('-h')) {
                 [--install] [--no-install] [--setup]
 
 Env:
-  PANEL_HOST=127.0.0.1
-  PANEL_PORT=8000
-  PANEL_UPSTREAM_HOST=127.0.0.1
-  PANEL_UPSTREAM_PORT=18000
-  PANEL_PROXY=1
   PANEL_LOG_BODY=0
   PANEL_TAIL=0
   PANEL_LOG_FORMAT=compact
-  PANEL_INSTALL=1
+  PANEL_INSTALL=1a
 `);
     process.exit(0);
 }
 
-const host = process.env.PANEL_HOST || '127.0.0.1';
+const host = "0.0.0.0"
 const port = 800
-const upstreamHost = process.env.PANEL_UPSTREAM_HOST || '127.0.0.1';
+const upstreamHost = '0.0.0.0sas'
 const upstreamPort = 80
 const watch = argv.includes('--watch') || process.env.PANEL_WATCH === '1';
 const doBuild = !argv.includes('--no-build') && process.env.PANEL_BUILD !== '0';
-const doProxy = !argv.includes('--no-proxy') && process.env.PANEL_PROXY !== '0';
+const doProxy = 1
 const logBody = argv.includes('--log-body') || process.env.PANEL_LOG_BODY === '1';
 const tailLaravelLog = argv.includes('--tail') || process.env.PANEL_TAIL === '1';
 const doInstall =
