@@ -33,7 +33,7 @@ Env:
 
 const host = "0.0.0.0"
 const port = 800
-const upstreamHost = '0.0.0.0sas'
+const upstreamHost = '0.0.0.0'
 const upstreamPort = 80
 const watch = argv.includes('--watch') || process.env.PANEL_WATCH === '1';
 const doBuild = !argv.includes('--no-build') && process.env.PANEL_BUILD !== '0';
